@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn Python with Me</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <h1 class="animated-title" id="title" aria-label="Learn Python with me"></h1>
+            <p class="subtitle">Build programs visually &mdash; generate real Python code</p>
+        </div>
+        <nav class="top-nav">
+            <button class="nav-btn" id="runBtn" title="Run the generated Python">
+                <span class="play-icon">&#9654;</span> Run
+            </button>
+            <button class="nav-btn ghost" id="genBtn" title="Refresh generated code">Generate</button>
+            <button class="nav-btn ghost" id="clearBtn" title="Clear the workspace">Clear</button>
+            <button class="nav-btn ghost" id="sampleBtn" title="Load a sample program">Sample</button>
+        </nav>
+    </header>
+
+    <main class="workspace-area">
+        <section class="blockly-pane" id="blocklyPane">
+            <div id="blocklyDiv"></div>
+        </section>
+
+        <div class="resizer" id="resizer" title="Drag to resize"></div>
+
+        <aside class="code-pane">
+            <div class="code-tabs">
+                <button class="tab active" data-tab="python">Python</button>
+                <button class="tab" data-tab="console">Console</button>
+                <button class="tab" data-tab="robot">Robot</button>
+                <span class="tab-status" id="statusDot"></span>
+            </div>
+            <pre class="code-output" id="pythonCode"><code># Your Python code will appear here...</code></pre>
+            <pre class="console-output" id="consoleOut" hidden>&gt; Ready. Press Run to execute your code.</pre>
+            <div class="robot-pane" id="robotPane" hidden>
+                <div class="robot-bar">
+                    <button class="nav-btn" id="robotRun"><span class="play-icon">&#9654;</span> Exécuter le robot</button>
+                    <button class="nav-btn ghost" id="robotReset">&#8635; Réinitialiser</button>
+                    <span class="robot-hint">Empile des blocs « Robot » puis exécute</span>
+                </div>
+                <canvas id="robotCanvas"></canvas>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Blockly core + default blocks + Python generator + messages -->
+    <script src="https://unpkg.com/blockly@9.2.0/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/python_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/msg/en.js"></script>
+    <!-- Skulpt to actually run the generated Python in the browser -->
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+
+    <script src="app.js"></script>
+</body>
+</html>
