@@ -123,7 +123,7 @@ function registerCustomBlocks() {
         init() {
             this.appendDummyInput().appendField('create empty dictionary');
             this.setOutput(true, 'Dictionary');
-            this.setColour(210);
+            this.setColour("#4B8BBE");
             this.setTooltip('Returns an empty dictionary {}');
         }
     };
@@ -138,7 +138,7 @@ function registerCustomBlocks() {
             this.appendValueInput('VAL1').setCheck(null).appendField('value');
             this.setInputsInline(false);
             this.setOutput(true, 'Dictionary');
-            this.setColour(210);
+            this.setColour("#4B8BBE");
             this.setTooltip('Create a dictionary from key/value pairs');
         }
     };
@@ -157,7 +157,7 @@ function registerCustomBlocks() {
             this.appendValueInput('KEY').setCheck(null).appendField('get key');
             this.setInputsInline(true);
             this.setOutput(true, null);
-            this.setColour(210);
+            this.setColour("#4B8BBE");
             this.setTooltip('Get the value for a key');
         }
     };
@@ -176,7 +176,7 @@ function registerCustomBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(210);
+            this.setColour("#4B8BBE");
             this.setTooltip('Set the value for a key');
         }
     };
@@ -192,7 +192,7 @@ function registerCustomBlocks() {
         init() {
             this.appendDummyInput().appendField('create empty set');
             this.setOutput(true, 'Set');
-            this.setColour(200);
+            this.setColour("#306998");
             this.setTooltip('Returns an empty set()');
         }
     };
@@ -206,7 +206,7 @@ function registerCustomBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(200);
+            this.setColour("#306998");
         }
     };
     Blockly.Python['set_add'] = (block) => {
@@ -223,7 +223,7 @@ function registerCustomBlocks() {
             this.appendValueInput('C').setCheck(null).appendField('and');
             this.setInputsInline(false);
             this.setOutput(true, 'Tuple');
-            this.setColour(190);
+            this.setColour("#5B9BD5");
             this.setTooltip('Create a tuple of up to 3 items');
         }
     };
@@ -243,7 +243,7 @@ function registerCustomBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Move the robot forward N cells');
         }
     };
@@ -260,7 +260,7 @@ function registerCustomBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Move the robot backward N cells');
         }
     };
@@ -275,7 +275,7 @@ function registerCustomBlocks() {
             this.appendDummyInput().appendField('pivoter à gauche 90°');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Turn the robot 90° to the left');
         }
     };
@@ -287,7 +287,7 @@ function registerCustomBlocks() {
             this.appendDummyInput().appendField('pivoter à droite 90°');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Turn the robot 90° to the right');
         }
     };
@@ -298,10 +298,10 @@ function registerCustomBlocks() {
         init() {
             this.appendDummyInput()
                 .appendField('couleur du chemin')
-                .appendField(new Blockly.FieldColour('#6ee7ff'), 'COLOR');
+                .appendField(new Blockly.FieldColour('#FFD43B'), 'COLOR');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Change the path colour');
         }
     };
@@ -318,7 +318,7 @@ function registerCustomBlocks() {
             this.setInputsInline(true);
             this.setPreviousStatement(true);
             this.setNextStatement(true);
-            this.setColour(160);
+            this.setColour("#3776AB");
             this.setTooltip('Draw a square of the given side length');
         }
     };
@@ -348,29 +348,29 @@ function initBlockly() {
     generateCode();
 }
 
-/* Modern Blockly theme */
+/* Modern Blockly theme — Python colours */
 function blocklyTheme() {
     return Blockly.Theme.defineTheme('modernDark', {
         name: 'modernDark',
         base: Blockly.Themes.Classic,
         blockStyles: {
-            logic_blocks: { colourPrimary: '#7c83ff' },
-            loop_blocks: { colourPrimary: '#26c6da' },
-            math_blocks: { colourPrimary: '#ffb74d' },
-            text_blocks: { colourPrimary: '#ff8a65' },
-            list_blocks: { colourPrimary: '#4db6ac' },
-            variable_blocks: { colourPrimary: '#ba68c8' },
-            procedure_blocks: { colourPrimary: '#9575cd' }
+            logic_blocks: { colourPrimary: '#4B8BBE' },
+            loop_blocks: { colourPrimary: '#3776AB' },
+            math_blocks: { colourPrimary: '#2E6CA4' },
+            text_blocks: { colourPrimary: '#5B9BD5' },
+            list_blocks: { colourPrimary: '#FFD43B', textColour: '#15202b' },
+            variable_blocks: { colourPrimary: '#306998' },
+            procedure_blocks: { colourPrimary: '#3E7CB1' }
         },
         componentStyles: {
-            workspaceBackgroundColour: '#0e1530',
-            toolboxBackgroundColour: '#0c1230',
-            toolboxForegroundColour: '#cdd6f4',
-            flyoutBackgroundColour: '#0c1230',
-            flyoutForegroundColour: '#cdd6f4',
-            scrollbarColour: '#33406b',
-            insertionMarkerColour: '#6ee7ff',
-            cursorColour: '#a78bfa'
+            workspaceBackgroundColour: '#0b1326',
+            toolboxBackgroundColour: '#0a1124',
+            toolboxForegroundColour: '#dbe6f5',
+            flyoutBackgroundColour: '#0a1124',
+            flyoutForegroundColour: '#dbe6f5',
+            scrollbarColour: '#2a3f5f',
+            insertionMarkerColour: '#FFD43B',
+            cursorColour: '#4B8BBE'
         }
     });
 }
@@ -544,7 +544,7 @@ const Robot = {
     x: 10,
     y: 10,
     dir: 0,            // 0=up, 1=right, 2=down, 3=left
-    pen: '#6ee7ff',
+    pen: '#FFD43B',
     trail: [],         // {x1,y1,x2,y2,color}
     canvas: null,
     ctx: null,
@@ -626,11 +626,11 @@ const Robot = {
         ctx.fill();
         ctx.stroke();
         // eyes
-        ctx.fillStyle = '#6ee7ff';
+        ctx.fillStyle = '#FFD43B';
         ctx.beginPath(); ctx.arc(-r * 0.4, -r * 0.25, r * 0.16, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.25, r * 0.16, 0, Math.PI * 2); ctx.fill();
         // direction triangle (pointing up)
-        ctx.fillStyle = '#f472b6';
+        ctx.fillStyle = '#3776AB';
         ctx.beginPath();
         ctx.moveTo(0, -r * 1.05);
         ctx.lineTo(-r * 0.35, -r * 0.55);
