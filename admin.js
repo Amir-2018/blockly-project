@@ -10,14 +10,27 @@
     function classes() { return DB.get().classes; }
     function currentClass() { return classes().find(c => c.id === classSelect.value); }
 
+    let selectedClass = null;
     function renderSelect() {
         classSelect.innerHTML = '';
-        classes().forEach(c => {
+        const list = classes();
+        list.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.id;
             opt.textContent = `${c.nom} (${c.eleves.length})`;
             classSelect.appendChild(opt);
         });
+        // Preserve the previously selected class after rebuilding the list.
+        if (selectedClass && list.some(c => c.id === selectedClass)) {
+            classSelect.value = selectedClass;
+        }
+        selectedClass = classSelect.value;
+    }
+
+    function refresh() {
+        selectedClass = classSelect.value;
+        renderSelect();
+        renderList();
     }
 
     function renderList() {
@@ -47,18 +60,18 @@
                 const prenom = prompt('Prénom de l\'élève :', s.prenom);
                 if (prenom === null) return;
                 DB.updateStudent(cls.id, s.id, { nom: nom.trim(), prenom: prenom.trim() });
-                renderSelect(); renderList();
+                refresh();
             };
             row.querySelector('[data-act="key"]').onclick = () => {
                 if (confirm(`Régénérer la clé de ${s.prenom} ${s.nom} ?`)) {
                     DB.regenerateKey(cls.id, s.id);
-                    renderSelect(); renderList();
+                    refresh();
                 }
             };
             row.querySelector('[data-act="del"]').onclick = () => {
                 if (confirm(`Supprimer ${s.prenom} ${s.nom} ?`)) {
                     DB.deleteStudent(cls.id, s.id);
-                    renderSelect(); renderList();
+                    refresh();
                 }
             };
             row.querySelector('[data-act="copy"]').onclick = () => {
@@ -74,7 +87,7 @@
         return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     }
 
-    classSelect.addEventListener('change', renderList);
+    classSelect.addEventListener('change', refresh);
     addForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const nom = document.getElementById('nom').value.trim();
@@ -82,7 +95,7 @@
         if (!nom || !prenom) return;
         DB.addStudent(classSelect.value, nom, prenom);
         addForm.reset();
-        renderSelect(); renderList();
+        refresh();
     });
     document.getElementById('logoutBtn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -90,6 +103,5 @@
         window.location.href = 'login.html';
     });
 
-    renderSelect();
-    renderList();
+    refresh();
 })();
