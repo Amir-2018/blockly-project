@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion — Amir Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+    <nav class="topbar">
+        <a class="brand" href="index.html"><span class="brand-badge">Py</span> Amir Academy</a>
+    </nav>
+
+    <main class="auth-card">
+        <h1>Connexion administrateur</h1>
+        <p class="auth-sub">Accès réservé à l'administrateur.</p>
+        <form id="loginForm" class="auth-form" autocomplete="off">
+            <label>Nom d'utilisateur
+                <input type="text" id="user" placeholder="admin" required />
+            </label>
+            <label>Mot de passe
+                <input type="password" id="pass" placeholder="•••••" required />
+            </label>
+            <button type="submit" class="cta cta-block">Se connecter</button>
+            <p id="err" class="auth-error" hidden>Identifiants incorrects.</p>
+        </form>
+        <a class="auth-back" href="index.html">&#8592; Retour à l'accueil</a>
+    </main>
+
+    <script src="store.js"></script>
+    <script>
+        if (Auth.isAdmin()) window.location.href = 'admin.html';
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value;
+            if (Auth.loginAdmin(u, p)) {
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('err').hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>

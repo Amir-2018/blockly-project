@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Espace élève — Amir Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+    <nav class="topbar">
+        <a class="brand" href="index.html"><span class="brand-badge">Py</span> Amir Academy</a>
+        <div class="topbar-actions">
+            <a class="nav-link" href="login.html">Connexion admin</a>
+        </div>
+    </nav>
+
+    <main class="auth-card">
+        <h1>Espace élève</h1>
+        <p class="auth-sub">Entre la clé fournie par ton professeur pour accéder à l'éditeur.</p>
+        <form id="keyForm" class="auth-form" autocomplete="off">
+            <label>Clé d'accès
+                <input type="text" id="key" placeholder="KEY-XXXX-..." required />
+            </label>
+            <button type="submit" class="cta cta-block">Accéder à l'éditeur</button>
+            <p id="err" class="auth-error" hidden>Clé invalide. Vérifie et réessaie.</p>
+        </form>
+        <a class="auth-back" href="index.html">&#8592; Retour à l'accueil</a>
+    </main>
+
+    <script src="store.js"></script>
+    <script>
+        if (Auth.isStudentValid()) window.location.href = 'editor.html';
+        document.getElementById('keyForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const key = document.getElementById('key').value.trim();
+            const found = DB.findStudentByKey(key);
+            if (found) {
+                Auth.setStudentSession(found.eleve, found.classe.nom);
+                window.location.href = 'editor.html';
+            } else {
+                document.getElementById('err').hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>

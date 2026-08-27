@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Amir Academy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body class="admin-page">
+    <nav class="topbar">
+        <a class="brand" href="admin.html"><span class="brand-badge">Py</span> Amir Academy</a>
+        <div class="topbar-actions">
+            <span class="admin-pill">Admin</span>
+            <a class="nav-btn ghost" href="#" id="logoutBtn">Déconnexion</a>
+        </div>
+    </nav>
+
+    <main class="admin-wrap">
+        <header class="admin-head">
+            <h1>Gestion des élèves</h1>
+            <p>Sélectionne une classe, puis ajoute / modifie / supprime des élèves et génère leurs clés d'accès.</p>
+        </header>
+
+        <section class="admin-controls">
+            <label class="select-label">Classe
+                <select id="classSelect"></select>
+            </label>
+            <form id="addForm" class="add-form">
+                <input type="text" id="nom" placeholder="Nom" required />
+                <input type="text" id="prenom" placeholder="Prénom" required />
+                <button type="submit" class="cta cta-sm">+ Ajouter un élève</button>
+            </form>
+        </section>
+
+        <section class="student-list" id="studentList"></section>
+    </main>
+
+    <script src="store.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

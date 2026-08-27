@@ -39,6 +39,13 @@
                 <button class="tab" data-tab="console">Console</button>
                 <button class="tab" data-tab="robot">Robot</button>
                 <span class="tab-status" id="statusDot"></span>
+                <div class="menu-wrap">
+                    <button class="menu-btn" id="menuBtn" title="Menu" aria-haspopup="true" aria-expanded="false">&#8942;</button>
+                    <div class="menu-list" id="menuList" hidden>
+                        <button id="dlPdf"><span class="mi">&#128196;</span> Télécharger en PDF</button>
+                        <button id="dlPy"><span class="mi">&#128190;</span> Télécharger .py</button>
+                    </div>
+                </div>
             </div>
             <pre class="code-output" id="pythonCode"><code># Your Python code will appear here...</code></pre>
             <pre class="console-output" id="consoleOut" hidden>&gt; Ready. Press Run to execute your code.</pre>
@@ -61,7 +68,10 @@
     <!-- Skulpt to actually run the generated Python in the browser -->
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+    <!-- jsPDF to export the generated code as a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+    <script src="store.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

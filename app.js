@@ -474,6 +474,64 @@ def draw_square(side):
         turn_right()
 `;
 
+/* --------------------------- Export code (PDF / .py) --------------------- */
+function currentPython() {
+    return Blockly.Python.workspaceToCode(workspace) || '# (espace de travail vide)';
+}
+
+function downloadPy() {
+    const code = currentPython();
+    const blob = new Blob([code], { type: 'text/x-python;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'python-code.py';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadPDF() {
+    if (typeof window.jspdf === 'undefined') {
+        consoleEl.hidden = false;
+        document.querySelector('.tab[data-tab="console"]').click();
+        consoleEl.innerHTML = '<span class="err">jsPDF n\'est pas chargé (pas de connexion internet ?).</span>';
+        return;
+    }
+    const code = currentPython();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 40;
+    const lineH = 15;
+    const maxW = doc.internal.pageSize.getWidth() - margin * 2;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(48, 106, 171);
+    doc.text('Lire Python avec Amir Academy', margin, margin);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text(new Date().toLocaleString(), margin, margin + 16);
+
+    doc.setDrawColor(220);
+    doc.line(margin, margin + 26, doc.internal.pageSize.getWidth() - margin, margin + 26);
+
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(20);
+
+    const lines = doc.splitTextToSize(code, maxW);
+    let y = margin + 26 + lineH + 4;
+    const pageH = doc.internal.pageSize.getHeight();
+    for (const ln of lines) {
+        if (y > pageH - margin) { doc.addPage(); y = margin; }
+        doc.text(ln, margin, y);
+        y += lineH;
+    }
+    doc.save('python-code.pdf');
+}
+
 /* ------------------------------ UI wiring ------------------------------- */
 function wireUI() {
     runBtn.addEventListener('click', runCode);
@@ -504,6 +562,24 @@ function wireUI() {
         Robot.reset();
         Robot.draw();
     });
+
+    // Download menu (PDF / .py)
+    const menuBtn = document.getElementById('menuBtn');
+    const menuList = document.getElementById('menuList');
+    menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const open = menuList.hidden;
+        menuList.hidden = !open;
+        menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', (e) => {
+        if (!menuList.hidden && !menuList.contains(e.target) && e.target !== menuBtn) {
+            menuList.hidden = true;
+            menuBtn.setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.getElementById('dlPdf').addEventListener('click', () => { menuList.hidden = true; downloadPDF(); });
+    document.getElementById('dlPy').addEventListener('click', () => { menuList.hidden = true; downloadPy(); });
 
     // Resizer
     const resizer = document.getElementById('resizer');
@@ -845,7 +921,23 @@ function animateTitle() {
 
 /* -------------------------------- Boot ---------------------------------- */
 window.addEventListener('DOMContentLoaded', () => {
+    // Protect the editor: only a student with a valid key may enter.
+    if (typeof Auth !== 'undefined' && !Auth.isStudentValid()) {
+        window.location.href = 'eleve.html';
+        return;
+    }
+
     animateTitle();
+
+    // Show the connected student (if any) in the subtitle.
+    if (typeof Auth !== 'undefined') {
+        const s = Auth.getStudentSession();
+        if (s) {
+            const sub = document.querySelector('.subtitle');
+            if (sub) sub.textContent = `Élève : ${s.prenom} ${s.nom} — ${s.classe}`;
+        }
+    }
+
     if (typeof Blockly === 'undefined') {
         document.getElementById('blocklyDiv').innerHTML =
             '<p style="padding:24px;color:#fb7185">Blockly failed to load. Check your internet connection.</p>';
