@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Admin — Amir Academy' }) %>
+</head>
+<body class="admin-page">
+    <%- include('navbar', { admin: true }) %>
+
+    <main class="admin-wrap">
+        <header class="admin-head">
+            <h1>Gestion des élèves</h1>
+            <p>Sélectionne une classe, puis ajoute / modifie / supprime des élèves et génère leurs clés d'accès.</p>
+        </header>
+
+        <section class="admin-controls">
+            <form method="get" action="/admin" class="select-label">
+                Classe
+                <select name="c" onchange="this.form.submit()">
+                    <% classes.forEach(c => { %>
+                        <option value="<%= c.id %>" <%= c.id === current ? 'selected' : '' %>><%= c.nom %> (<%= c.eleves.length %>)</option>
+                    <% }); %>
+                </select>
+            </form>
+
+            <form method="post" action="/admin/student" class="add-form">
+                <input type="hidden" name="action" value="add" />
+                <input type="hidden" name="classId" value="<%= current %>" />
+                <input type="text" name="nom" placeholder="Nom" required />
+                <input type="text" name="prenom" placeholder="Prénom" required />
+                <button type="submit" class="cta cta-sm">+ Ajouter un élève</button>
+            </form>
+        </section>
+
+        <section class="student-list" id="studentList">
+            <% const cls = classes.find(c => c.id === current); %>
+            <% if (!cls || cls.eleves.length === 0) { %>
+                <p class="empty">Aucun élève dans cette classe. Ajoute le premier ci-dessus.</p>
+            <% } else { %>
+                <% cls.eleves.forEach(s => { %>
+                    <div class="student-row" data-id="<%= s.id %>" data-class="<%= current %>">
+                        <div class="stu-name"><strong><%= s.prenom %> <%= s.nom %></strong></div>
+                        <div class="stu-key"><code><%= s.key %></code>
+                            <button class="mini" data-act="copy" title="Copier">&#9095;</button>
+                        </div>
+                        <div class="stu-actions">
+                            <button class="mini" data-act="edit">Modifier</button>
+                            <button class="mini" data-act="key">Régénérer clé</button>
+                            <button class="mini danger" data-act="del">Supprimer</button>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
+        </section>
+    </main>
+
+    <script src="/admin.js"></script>
+</body>
+</html>

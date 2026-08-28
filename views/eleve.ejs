@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Espace élève — Amir Academy' }) %>
+</head>
+<body class="auth-page">
+    <%- include('navbar', { showLogin: true }) %>
+
+    <main class="auth-card">
+        <h1>Espace élève</h1>
+        <p class="auth-sub">Entre la clé fournie par ton professeur pour accéder à l'éditeur.</p>
+        <form class="auth-form" method="post" action="/eleve" autocomplete="off">
+            <label>Clé d'accès
+                <input type="text" name="key" placeholder="KEY-XXXX-..." required />
+            </label>
+            <button type="submit" class="cta cta-block">Accéder à l'éditeur</button>
+            <% if (error) { %><p class="auth-error">Clé invalide. Vérifie et réessaie.</p><% } %>
+        </form>
+        <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
+    </main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<nav class="topbar">
+    <a class="brand" href="/"><span class="brand-badge">Py</span> Amir Academy</a>
+    <div class="topbar-actions">
+        <% if (typeof showHome !== 'undefined' && showHome) { %><a class="nav-link" href="/">Accueil</a><% } %>
+        <% if (typeof showEleve !== 'undefined' && showEleve) { %><a class="nav-link" href="/eleve">Espace élève</a><% } %>
+        <% if (typeof showLogin !== 'undefined' && showLogin) { %><a class="nav-btn" href="/login">Connexion</a><% } %>
+        <% if (typeof admin !== 'undefined' && admin) { %><span class="admin-pill">Admin</span><a class="nav-btn ghost" href="/logout">Déconnexion</a><% } %>
+    </div>
+</nav>

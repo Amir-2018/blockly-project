@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Connexion — Amir Academy' }) %>
+</head>
+<body class="auth-page">
+    <%- include('navbar') %>
+
+    <main class="auth-card">
+        <h1>Connexion administrateur</h1>
+        <p class="auth-sub">Accès réservé à l'administrateur.</p>
+        <form class="auth-form" method="post" action="/login" autocomplete="off">
+            <label>Nom d'utilisateur
+                <input type="text" name="user" placeholder="admin" required />
+            </label>
+            <label>Mot de passe
+                <input type="password" name="pass" placeholder="•••••" required />
+            </label>
+            <button type="submit" class="cta cta-block">Se connecter</button>
+            <% if (error) { %><p class="auth-error">Identifiants incorrects.</p><% } %>
+        </form>
+        <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
+    </main>
+</body>
+</html>

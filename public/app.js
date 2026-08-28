@@ -921,22 +921,7 @@ function animateTitle() {
 
 /* -------------------------------- Boot ---------------------------------- */
 window.addEventListener('DOMContentLoaded', () => {
-    // Protect the editor: only a student with a valid key may enter.
-    if (typeof Auth !== 'undefined' && !Auth.isStudentValid()) {
-        window.location.href = 'eleve.html';
-        return;
-    }
-
     animateTitle();
-
-    // Show the connected student (if any) in the subtitle.
-    if (typeof Auth !== 'undefined') {
-        const s = Auth.getStudentSession();
-        if (s) {
-            const sub = document.querySelector('.subtitle');
-            if (sub) sub.textContent = `Élève : ${s.prenom} ${s.nom} — ${s.classe}`;
-        }
-    }
 
     if (typeof Blockly === 'undefined') {
         document.getElementById('blocklyDiv').innerHTML =

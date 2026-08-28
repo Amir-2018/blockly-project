@@ -1,22 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lire Python avec Amir Academy</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+    <%- include('head', { title: 'Éditeur Python — Amir Academy' }) %>
 </head>
 <body>
     <header class="app-header">
         <div class="header-inner">
             <h1 class="animated-title" id="title" aria-label="Lire Python avec Amir Academy"></h1>
-            <p class="subtitle">Build programs visually &mdash; generate real Python code</p>
+            <p class="subtitle">Élève : <%= student.prenom %> <%= student.nom %> — <%= student.classe %></p>
         </div>
         <nav class="top-nav">
-            <a class="nav-btn ghost" href="index.html" title="Back to home">&#8592; Accueil</a>
+            <a class="nav-btn ghost" href="/">&#8592; Accueil</a>
             <button class="nav-btn" id="runBtn" title="Run the generated Python">
                 <span class="play-icon">&#9654;</span> Run
             </button>
@@ -71,7 +65,6 @@
     <!-- jsPDF to export the generated code as a PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <script src="store.js"></script>
-    <script src="app.js"></script>
+    <script src="/app.js"></script>
 </body>
 </html>
