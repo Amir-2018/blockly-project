@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <%- include('head', { title: 'Connexion — Amir Academy' }) %>
+    <%- include('head', { title: 'Connexion enseignant — Amir Academy' }) %>
 </head>
 <body class="landing auth-page">
     <%- include('navbar', { showEleve: true, showLogin: false }) %>
@@ -17,15 +17,15 @@
             <div class="py-badge">
                 <img src="/images/Gemini_Generated_Image_81m0sb81m0sb81m0.jpeg" alt="Amir Academy logo" />
             </div>
-            <h1 class="landing-title">Connexion <span class="accent">admin</span></h1>
-            <p class="auth-sub">Accès réservé à l’administrateur.</p>
+            <h1 class="landing-title">Connexion <span class="accent">enseignant</span></h1>
+            <p class="auth-sub">Accès réservé à l’enseignant.</p>
 
-            <form class="auth-form" method="post" action="/login" autocomplete="off">
+            <form class="auth-form" method="post" action="/teacher" autocomplete="off">
                 <label>Nom d'utilisateur
-                    <input type="text" name="user" placeholder="admin" required />
+                    <input type="text" name="user" placeholder="enseignant" required />
                 </label>
-                <label>Mot de passe
-                    <input type="password" name="pass" placeholder="••••••" required />
+                <label>Pass key
+                    <input type="password" name="pass" placeholder="KEY-TEACHER" required />
                 </label>
                 <button type="submit" class="cta cta-block">Se connecter</button>
                 <% if (error) { %><p class="auth-error">Identifiants incorrects.</p><% } %>
@@ -34,7 +34,7 @@
             <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
         </div>
 
-        <div >
+        <div>
             <img src="/images/images.png" alt="Illustration Amir Academy" />
         </div>
     </div>

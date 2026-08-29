@@ -28,10 +28,7 @@ html, body {
     height: 100%;
     font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     color: var(--text);
-    background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(255, 212, 59, 0.12), transparent 60%),
-        radial-gradient(1000px 500px at 100% 0%, rgba(55, 118, 171, 0.18), transparent 55%),
-        linear-gradient(160deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
+    background: #FFFFFF;
     background-attachment: fixed;
     overflow: hidden;
 }
@@ -67,14 +64,11 @@ html, body {
 
 .animated-title .char {
     display: inline-block;
-    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent));
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     animation: charIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both,
-               gradientShift 6s linear infinite;
-    text-shadow: 0 0 30px rgba(110, 231, 255, 0.15);
 }
 
 .animated-title .space { width: 0.4em; }
@@ -101,7 +95,6 @@ html, body {
     font-weight: 600;
     cursor: pointer;
     color: #06121f;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     box-shadow: 0 8px 22px rgba(110, 231, 255, 0.25);
     transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
@@ -143,7 +136,6 @@ html, body {
 .resizer {
     flex: 0 0 8px;
     border-radius: 99px;
-    background: linear-gradient(180deg, var(--accent), var(--accent-2));
     cursor: col-resize;
     opacity: 0.5;
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -186,7 +178,6 @@ html, body {
     transition: background 0.18s ease, color 0.18s ease;
 }
 .tab:hover { color: var(--text); }
-.tab.active { color: #06121f; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
 
 .tab-status {
     margin-left: auto;
@@ -283,9 +274,7 @@ html, body {
     from { transform: translateY(0.6em) rotateX(-40deg); opacity: 0; filter: blur(6px); }
     to { transform: translateY(0) rotateX(0); opacity: 1; filter: blur(0); }
 }
-@keyframes gradientShift {
-    to { background-position: 300% 0; }
-}
+
 @keyframes pulse {
     0% { box-shadow: 0 0 0 0 rgba(110, 231, 255, 0.5); }
     70% { box-shadow: 0 0 0 10px rgba(110, 231, 255, 0); }
@@ -335,9 +324,7 @@ html, body {
     flex: 1 1 auto;
     width: 100%;
     display: block;
-    background:
-        radial-gradient(600px 300px at 50% 0%, rgba(75, 139, 190, 0.12), transparent 60%),
-        #0b1020;
+  
 }
 
 /* ============================ Landing page ============================ */
@@ -346,30 +333,53 @@ body.landing {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 .landing-split {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 30px;
-    width: 100%;
-    padding: 10px 6vw;
+    justify-content: space-between;
+    gap: clamp(28px, 4vw, 72px);
+    width: min(1280px, 100%);
+    min-height: 70vh;
+    padding: 32px 6vw 12px;
+    margin: 0 auto;
 }
-.landing-left { flex: 1 1 50%; max-width: 560px; }
-.landing-right { flex: 1 1 50%; min-height: 340px; }
+.landing-left {
+    flex: 1 1 50%;
+    max-width: 50%;
+    width: 50%;
+}
+.landing-right {
+    flex: 1 1 50%;
+    width: 50%;
+    min-height: 420px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.landing-right img {
+    width: 100%;
+    height: 100%;
+    max-height: 560px;
+    object-fit: cover;
+    border-radius: 24px;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 16px 36px rgba(17, 24, 39, 0.08);
+}
 .landing-card { margin: 0; }
 .landing-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
 .landing-bg .blob {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
-    opacity: 0.55;
-    animation: floatBlob 14s ease-in-out infinite;
+    opacity: 0;
+    background: transparent;
+    animation: none;
 }
-.blob-blue { width: 460px; height: 460px; background: var(--py-blue); top: -120px; left: -80px; }
-.blob-yellow { width: 420px; height: 420px; background: var(--py-yellow); bottom: -140px; right: -60px; animation-delay: -5s; }
-.blob-blue2 { width: 320px; height: 320px; background: var(--py-blue-dark); top: 40%; right: 18%; animation-delay: -9s; opacity: 0.4; }
+.blob-blue, .blob-yellow, .blob-blue2 { display: none; }
 
 .landing-card {
     position: relative;
@@ -381,20 +391,24 @@ body.landing {
     background: rgba(10, 17, 36, 0.55);
     border: 1px solid var(--panel-border);
     backdrop-filter: blur(16px);
-    box-shadow: var(--shadow);
+    box-shadow: none;
     animation: fadeUp 0.9s ease both;
 }
 .py-badge {
-    width: 84px; height: 84px;
+    width: 88px; height: 88px;
     margin: 0 auto 22px;
     border-radius: 22px;
     display: grid; place-items: center;
-    font-family: "Poppins", sans-serif;
-    font-weight: 800; font-size: 2rem;
-    color: #0a1124;
-    background: linear-gradient(135deg, var(--py-yellow), var(--py-yellow-light) 45%, var(--py-blue) 120%);
-    box-shadow: 0 12px 30px rgba(55, 118, 171, 0.45);
+    overflow: hidden;
+    background: #F3F4F6;
+    box-shadow: none;
     animation: popIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.py-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 .landing-title {
     font-family: "Poppins", sans-serif;
@@ -404,11 +418,9 @@ body.landing {
     margin: 0 0 14px;
 }
 .landing-title .accent {
-    background: linear-gradient(90deg, var(--py-yellow), var(--py-blue-light), var(--py-yellow));
     background-size: 250% 100%;
     -webkit-background-clip: text; background-clip: text;
     color: transparent;
-    animation: gradientShift 6s linear infinite;
 }
 .landing-lead {
     color: var(--text-dim);
@@ -427,7 +439,6 @@ body.landing {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--panel-border);
 }
-.feature .dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, var(--py-yellow), var(--py-blue)); }
 
 .cta {
     display: inline-flex; align-items: center; gap: 10px;
@@ -437,7 +448,6 @@ body.landing {
     color: #0a1124;
     padding: 15px 34px;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--py-yellow), var(--py-blue-light));
     box-shadow: 0 14px 30px rgba(55, 118, 171, 0.45);
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     animation: fadeUp 0.9s ease 0.25s both;
@@ -470,41 +480,117 @@ body.landing {
 }
 .auth-card { position: relative; z-index: 1; }
 
+.choice-grid {
+    position: relative;
+    z-index: 1;
+    width: min(920px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+    gap: 26px;
+}
+.choice-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    padding: 34px 26px;
+    border-radius: 24px;
+    text-decoration: none;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 12px 28px rgba(17, 24, 39, 0.06);
+    color: #111827;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.choice-card:hover {
+    transform: translateY(-4px);
+    border-color: #51C1E5;
+    box-shadow: 0 18px 30px rgba(81, 193, 229, 0.14);
+}
+.choice-card .py-badge {
+    margin: 0;
+    width: 74px;
+    height: 74px;
+}
+.choice-card h2 {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+    color: #111827;
+}
+.choice-card p {
+    margin: 0;
+    color: #4B5563;
+    line-height: 1.6;
+    font-size: 0.96rem;
+}
+.choice-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: #51C1E5;
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.96rem;
+}
+@media (max-width: 700px) {
+    .choice-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ============================ Accueil — custom theme ======================
-   Fond blanc, navbar + carte gauche #0D1D37, boutons #0D1D37 texte blanc gras */
+   Version blanche et neutre sans couleurs parasites */
 body.landing {
     --bg-0: #FFFFFF;
     --bg-1: #FFFFFF;
     --bg-2: #FFFFFF;
     --py-blue: #51C1E5;
     --py-blue-light: #51C1E5;
-    --py-blue-dark: #0D1D37;
-    --py-yellow: #FEDA4F;
-    --py-yellow-light: #FEDA4F;
+    --py-blue-dark: #51C1E5;
+    --py-yellow: #F3F4F6;
+    --py-yellow-light: #F3F4F6;
     --accent: #51C1E5;
-    --accent-2: #FEDA4F;
-    --text: #FFFFFF;
-    --text-dim: #BFD8E6;
+    --accent-2: #51C1E5;
+    --text: #111827;
+    --text-dim: #4B5563;
     background: #FFFFFF;
 }
-/* Navbar #0D1D37, texte blanc */
-body.landing .topbar { background: #0D1D37; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
-body.landing .brand, body.landing .nav-link { color: #FFFFFF; }
-/* Carte gauche #0D1D37, texte blanc */
+body.landing .topbar { background: #FFFFFF; border-bottom: 1px solid #E5E7EB; box-shadow: 0 4px 18px rgba(17, 24, 39, 0.08); }
+body.landing .brand, body.landing .nav-link { color: #111827; }
 body.landing .landing-card {
-    background: #0D1D37;
-    border: none;
-    box-shadow: 0 18px 50px rgba(13, 29, 55, 0.25);
-    color: #FFFFFF;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: none;
+    color: #111827;
 }
-body.landing .landing-lead, body.landing .landing-hint, body.landing .feature { color: #FFFFFF; }
-/* Boutons #0D1D37, texte blanc gras, liseré blanc pour rester visibles */
+body.landing .landing-title, body.landing .landing-lead, body.landing .landing-hint, body.landing .feature,
+body.landing .feature-row { color: #111827; }
 body.landing .nav-btn, body.landing .cta {
-    background: #0D1D37; color: #FFFFFF; font-weight: 700;
-    border: 2px solid #FFFFFF; box-shadow: none;
+    background: #51C1E5; color: #FFFFFF; font-weight: 700;
+    border: 1px solid #51C1E5; box-shadow: none;
 }
-body.landing .nav-btn.ghost { background: transparent; color: #FFFFFF; border-color: #FFFFFF; }
-body.landing .py-badge { color: #0D1D37; background: linear-gradient(135deg, #FEDA4F, #FFFFFF 60%, #51C1E5); }
+body.landing .nav-btn.ghost { background: transparent; color: #111827; border-color: #D1D5DB; }
+body.landing .py-badge {
+    color: #111827; background: #F3F4F6; border: 1px solid #E5E7EB;
+    box-shadow: none; overflow: hidden;
+}
+body.landing .feature {
+    color: #111827;
+    background: #F9FAFB;
+    border-color: #E5E7EB;
+}
+body.landing .feature .dot { background: #51C1E5; }
+body.landing .landing-title .accent {
+    background: none; color: #51C1E5; -webkit-background-clip: initial; background-clip: initial;
+    animation: none;
+}
 
 /* ============================ Topbar / navbar ============================ */
 .topbar {
@@ -530,11 +616,18 @@ body.landing .py-badge { color: #0D1D37; background: linear-gradient(135deg, #FE
     color: var(--text);
 }
 .brand-badge {
-    width: 30px; height: 30px;
+    width: 34px; height: 34px;
     display: grid; place-items: center;
-    border-radius: 9px;
-    font-size: 0.85rem; font-weight: 800; color: #0a1124;
-    background: linear-gradient(135deg, var(--py-yellow), var(--py-yellow-light) 45%, var(--py-blue) 120%);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #F3F4F6;
+    border: 1px solid #E5E7EB;
+}
+.brand-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
 .nav-link {
@@ -549,7 +642,6 @@ body.landing .py-badge { color: #0D1D37; background: linear-gradient(135deg, #FE
     font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;
     padding: 5px 12px; border-radius: 999px;
     color: #0a1124;
-    background: linear-gradient(135deg, var(--py-yellow), var(--py-blue-light));
 }
 
 /* ============================ Auth pages ================================ */
@@ -558,50 +650,85 @@ body.landing .py-badge { color: #0D1D37; background: linear-gradient(135deg, #FE
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(255, 212, 59, 0.12), transparent 60%),
-        radial-gradient(1000px 500px at 100% 0%, rgba(55, 118, 171, 0.20), transparent 55%),
-        linear-gradient(160deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
+    background: #FFFFFF;
+    color: #111827;
 }
-.auth-card {
-    margin: auto;
-    width: min(420px, 92vw);
+.auth-page .topbar {
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
+    box-shadow: 0 4px 18px rgba(17, 24, 39, 0.08);
+}
+.auth-page .brand,
+.auth-page .nav-link,
+.auth-page .nav-btn,
+.auth-page .admin-pill {
+    color: #111827;
+}
+.auth-page .nav-btn {
+    background: #51C1E5;
+    color: #FFFFFF;
+    border-color: #51C1E5;
+}
+.auth-page .nav-btn.ghost {
+    background: transparent;
+    color: #111827;
+    border-color: #D1D5DB;
+}
+.auth-page .landing-split {
+    width: min(1180px, 100%);
+    min-height: 70vh;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+.auth-page .landing-left {
+    flex: 1 1 48%;
+    max-width: 48%;
+    width: 48%;
+}
+.auth-page .auth-card {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 560px;
     padding: 38px 34px;
     border-radius: 22px;
-    background: rgba(10, 17, 36, 0.6);
-    border: 1px solid var(--panel-border);
-    backdrop-filter: blur(16px);
-    box-shadow: var(--shadow);
-    text-align: center;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    box-shadow: none;
+    text-align: left;
     animation: fadeUp 0.7s ease both;
 }
-.auth-card h1 { font-family: "Poppins", sans-serif; margin: 0 0 6px; font-size: 1.6rem; }
-.auth-sub { color: var(--text-dim); margin: 0 0 22px; font-size: 0.92rem; }
+.auth-page .auth-card .py-badge {
+    margin-left: 0;
+}
+.auth-page .auth-card h1 {
+    font-family: "Poppins", sans-serif;
+    margin: 0 0 6px;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    color: #111827;
+    text-align: left;
+}
+.auth-sub { color: #4B5563; margin: 0 0 22px; font-size: 0.92rem; }
 .auth-form { display: flex; flex-direction: column; gap: 14px; text-align: left; }
-.auth-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--text-dim); }
+.auth-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: #4B5563; }
 .auth-form input {
     padding: 12px 14px;
     border-radius: 11px;
-    border: 1px solid var(--panel-border);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text);
+    border: 1px solid #D1D5DB;
+    background: #F9FAFB;
+    color: #111827;
     font: inherit;
     outline: none;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
-.auth-form input:focus { border-color: var(--py-blue-light); box-shadow: 0 0 0 3px rgba(75, 139, 190, 0.25); }
+.auth-form input:focus { border-color: #51C1E5; box-shadow: 0 0 0 3px rgba(81, 193, 229, 0.18); }
 .cta-block { width: 100%; justify-content: center; margin-top: 4px; }
 .auth-error { color: var(--bad); font-size: 0.85rem; text-align: center; margin: 0; }
-.auth-back { display: inline-block; margin-top: 18px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; }
-.auth-back:hover { color: var(--text); }
+.auth-back { display: inline-block; margin-top: 18px; color: #4B5563; text-decoration: none; font-size: 0.85rem; }
+.auth-back:hover { color: #111827; }
 
 /* ============================ Admin dashboard ============================ */
 .admin-page {
     min-height: 100vh;
-    background:
-        radial-gradient(1000px 500px at 100% 0%, rgba(55, 118, 171, 0.18), transparent 55%),
-        radial-gradient(900px 500px at 0% 100%, rgba(255, 212, 59, 0.08), transparent 55%),
-        linear-gradient(160deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
 }
 .admin-wrap {
     max-width: 880px;

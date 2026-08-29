@@ -3,29 +3,40 @@
 <head>
     <%- include('head', { title: 'Espace élève — Amir Academy' }) %>
 </head>
-<body class="auth-page">
-    <%- include('navbar', { showLogin: true }) %>
+<body class="landing auth-page">
+    <%- include('navbar', { showTeacher: true, showLogin: false }) %>
 
-    <main class="auth-card">
-        <h1>Espace élève</h1>
-        <p class="auth-sub">Entre ta clé et ton identité pour accéder à l'éditeur.</p>
-        <form class="auth-form" method="post" action="/eleve" autocomplete="off">
-            <label>Clé d'accès
-                <input type="text" name="key" placeholder="KEY-XXXX-..." required />
-            </label>
-            <label>Nom
-                <input type="text" name="nom" placeholder="Ton nom" required />
-            </label>
-            <label>Prénom
-                <input type="text" name="prenom" placeholder="Ton prénom" required />
-            </label>
-            <button type="submit" class="cta cta-block">Accéder à l'éditeur</button>
-            <% if (error) { %><p class="auth-error">Clé ou identité invalide. Vérifie et réessaie.</p><% } %>
-        </form>
-        <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
-    </main>
+    <div class="landing-bg" aria-hidden="true">
+        <span class="blob blob-blue"></span>
+        <span class="blob blob-yellow"></span>
+        <span class="blob blob-blue2"></span>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-    <script src="/robot3d.js"></script>
+    <div class="landing-split">
+        <div class="landing-card landing-left auth-card">
+            <div class="py-badge">
+                <img src="/images/Gemini_Generated_Image_81m0sb81m0sb81m0.jpeg" alt="Amir Academy logo" />
+            </div>
+            <h1 class="landing-title">Espace <span class="accent">élève</span></h1>
+            <p class="auth-sub">Entre ton nom d'utilisateur et ton pass key pour accéder à l'éditeur.</p>
+
+            <form class="auth-form" method="post" action="/eleve" autocomplete="off">
+                <label>Nom d'utilisateur
+                    <input type="text" name="nom" placeholder="Ton nom" required />
+                </label>
+                <label>Pass key
+                    <input type="text" name="key" placeholder="KEY-XXXX-..." required />
+                </label>
+                <button type="submit" class="cta cta-block">Accéder à l'éditeur</button>
+                <% if (error) { %><p class="auth-error">Nom d'utilisateur ou pass key invalide. Vérifie et réessaie.</p><% } %>
+            </form>
+
+            <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
+        </div>
+
+        <div>
+            <img src="/images/images.png" alt="Illustration Amir Academy" />
+        </div>
+    </div>
 </body>
 </html>

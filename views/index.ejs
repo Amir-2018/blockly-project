@@ -4,7 +4,7 @@
     <%- include('head', { title: 'Lire Python avec Amir Academy' }) %>
 </head>
 <body class="landing">
-    <%- include('navbar', { showEleve: true, showLogin: true }) %>
+    <%- include('navbar', { showLogin: true }) %>
 
     <div class="landing-bg" aria-hidden="true">
         <span class="blob blob-blue"></span>
@@ -14,7 +14,9 @@
 
     <div class="landing-split">
         <div class="landing-card landing-left">
-            <div class="py-badge"><span>Py</span></div>
+            <div class="py-badge">
+                <img src="/images/Gemini_Generated_Image_81m0sb81m0sb81m0.jpeg" alt="Amir Academy logo" />
+            </div>
             <h1 class="landing-title">Lire Python avec <span class="accent">Amir Academy</span></h1>
             <p class="landing-lead">
                 Apprends Python en construisant des programmes visuellement.
@@ -27,20 +29,19 @@
                 <div class="feature"><span class="dot"></span> Robot simulateur</div>
             </div>
 
-            <a class="cta" href="/eleve">
-                Get Started
+            <a class="cta" href="/choose">
+                Commenser
                 <span class="cta-arrow">&#8594;</span>
             </a>
 
             <p class="landing-hint">Programmation visuelle &bull; Python r&eacute;el &bull; Ex&eacute;cution instantan&eacute;e</p>
         </div>
 
-        <div class="landing-right" aria-hidden="true"></div>
+        <div >
+            <img src="/images/images.png" alt="Illustration Amir Academy" />
+        </div>
     </div>
 
     <footer class="landing-footer">Made with Python &amp; Blockly &mdash; Amir Academy</footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-    <script src="/robot3d.js"></script>
 </body>
 </html>

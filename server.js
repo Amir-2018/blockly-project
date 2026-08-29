@@ -11,8 +11,9 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 const DB_FILE = path.join(__dirname, 'db.json');
+const TEACHER_KEYS = new Set(['KEY-TEACHER', 'KEY-ADMIN']);
 
 /* ---------- db.json helpers ---------- */
 function readDB() {
@@ -56,18 +57,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /* ---------- public / landing ---------- */
 app.get('/', (req, res) => res.render('index'));
+app.get('/choose', (req, res) => res.render('choose'));
 
 /* ---------- admin auth ---------- */
 app.get('/login', (req, res) => res.render('login', { error: false }));
 app.post('/login', (req, res) => {
     const user = (req.body.user || '').trim();
-    const pass = req.body.pass || '';
+    const pass = (req.body.pass || '').trim();
+
     if (user === 'admin' && pass === 'admin') {
         req.session.admin = true;
         return res.redirect('/admin');
     }
     return res.render('login', { error: true });
 });
+
+app.get('/teacher', (req, res) => res.render('teacher', { error: false }));
+app.get('/enseignant', (req, res) => res.redirect('/teacher'));
+app.post('/teacher', (req, res) => {
+    const user = (req.body.user || '').trim();
+    const pass = (req.body.pass || '').trim();
+
+    if ((user === 'enseignant' || user === 'teacher') && TEACHER_KEYS.has(pass)) {
+        req.session.teacher = true;
+        return res.redirect('/admin');
+    }
+
+    return res.render('teacher', { error: true });
+});
+
 app.get('/logout', (req, res) => {
     req.session.destroy(() => res.redirect('/'));
 });
@@ -126,12 +144,10 @@ app.get('/eleve', (req, res) => res.render('eleve', { error: false }));
 app.post('/eleve', (req, res) => {
     const key = (req.body.key || '').trim();
     const nom = (req.body.nom || '').trim().toLowerCase();
-    const prenom = (req.body.prenom || '').trim().toLowerCase();
     const db = readDB();
     const found = findStudent(db, key);
-    if (found &&
-        found.eleve.nom.trim().toLowerCase() === nom &&
-        found.eleve.prenom.trim().toLowerCase() === prenom) {
+
+    if (found && found.eleve.nom.trim().toLowerCase() === nom) {
         req.session.student = {
             id: found.eleve.id,
             nom: found.eleve.nom,
@@ -141,6 +157,7 @@ app.post('/eleve', (req, res) => {
         };
         return res.redirect('/editor');
     }
+
     return res.render('eleve', { error: true });
 });
 

@@ -1,9 +1,15 @@
 <nav class="topbar">
-    <a class="brand" href="/"><span class="brand-badge">Py</span> Amir Academy</a>
+    <a class="brand" href="/">
+        <span class="brand-badge">
+            <img src="/images/Gemini_Generated_Image_81m0sb81m0sb81m0.jpeg" alt="Amir Academy logo" />
+        </span>
+        Amir Academy
+    </a>
     <div class="topbar-actions">
         <% if (typeof showHome !== 'undefined' && showHome) { %><a class="nav-link" href="/">Accueil</a><% } %>
+        <% if (typeof showTeacher !== 'undefined' && showTeacher) { %><a class="nav-link" href="/teacher">Espace enseignant</a><% } %>
         <% if (typeof showEleve !== 'undefined' && showEleve) { %><a class="nav-link" href="/eleve">Espace élève</a><% } %>
-        <% if (typeof showLogin !== 'undefined' && showLogin) { %><a class="nav-btn" href="/login">Connexion</a><% } %>
+        <a class="nav-btn" href="/login">Connexion</a>
         <% if (typeof admin !== 'undefined' && admin) { %><span class="admin-pill">Admin</span><a class="nav-btn ghost" href="/logout">Déconnexion</a><% } %>
     </div>
 </nav>
