@@ -348,7 +348,17 @@ body.landing {
     min-height: 100vh;
     overflow: hidden;
 }
-.landing-card { margin: auto; }
+.landing-split {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+    padding: 10px 6vw;
+}
+.landing-left { flex: 1 1 50%; max-width: 560px; }
+.landing-right { flex: 1 1 50%; min-height: 340px; }
+.landing-card { margin: 0; }
 .landing-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
 .landing-bg .blob {
     position: absolute;
@@ -446,11 +456,17 @@ body.landing {
 /* 3D robot background canvas (Three.js) */
 .robot3d-canvas {
     position: fixed;
-    inset: 0;
-    width: 100%;
+    top: 0;
+    right: 0;
+    width: 50%;
     height: 100%;
     z-index: 0;
     pointer-events: none;
+}
+@media (max-width: 860px) {
+    .landing-split { flex-direction: column; padding: 20px 5vw; }
+    .landing-right { display: none; }
+    .robot3d-canvas { width: 100%; opacity: 0.4; }
 }
 .auth-card { position: relative; z-index: 1; }
 

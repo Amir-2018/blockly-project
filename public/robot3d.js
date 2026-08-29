@@ -65,7 +65,8 @@
     scene.add(robot);
 
     function resize() {
-        const w = window.innerWidth, h = window.innerHeight;
+        const w = canvas.clientWidth || window.innerWidth / 2;
+        const h = canvas.clientHeight || window.innerHeight;
         renderer.setSize(w, h, false);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
