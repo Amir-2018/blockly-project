@@ -77,8 +77,12 @@ app.get('/enseignant', (req, res) => res.redirect('/teacher'));
 app.post('/teacher', (req, res) => {
     const user = (req.body.user || '').trim();
     const pass = (req.body.pass || '').trim();
+    const db = readDB();
+    const teacher = Array.isArray(db.teachers)
+        ? db.teachers.find((item) => item.username === user && item.key === pass)
+        : null;
 
-    if ((user === 'enseignant' || user === 'teacher') && TEACHER_KEYS.has(pass)) {
+    if (teacher || ((user === 'enseignant' || user === 'teacher') && TEACHER_KEYS.has(pass))) {
         req.session.teacher = true;
         return res.redirect('/admin');
     }
@@ -93,52 +97,49 @@ app.get('/logout', (req, res) => {
 /* ---------- admin dashboard ---------- */
 app.get('/admin', requireAdmin, (req, res) => {
     const db = readDB();
-    const current = req.query.c || (db.classes[0] && db.classes[0].id);
-    res.render('admin', { classes: db.classes, current });
+    if (!Array.isArray(db.teachers)) db.teachers = [];
+    const notice = req.session.adminNotice || null;
+    delete req.session.adminNotice;
+    res.render('admin', { teachers: db.teachers, notice });
 });
 
-app.post('/admin/student', requireAdmin, (req, res) => {
-    const { action, classId, id, nom, prenom } = req.body;
+app.post('/admin/teacher', requireAdmin, (req, res) => {
+    const { action, id, nom, prenom, username } = req.body;
     const db = readDB();
-    const cls = db.classes.find((c) => c.id === classId);
-    if (!cls) return res.redirect('/admin');
+    if (!Array.isArray(db.teachers)) db.teachers = [];
 
     if (action === 'add') {
-        cls.eleves.push({
-            id: 's' + Date.now().toString(36),
+        db.teachers.push({
+            id: 't' + Date.now().toString(36),
             nom: (nom || '').trim(),
             prenom: (prenom || '').trim(),
+            username: (username || '').trim(),
             key: genKey()
         });
     } else if (action === 'update') {
-        const s = cls.eleves.find((e) => e.id === id);
-        if (s) { s.nom = (nom || '').trim(); s.prenom = (prenom || '').trim(); }
+        const t = db.teachers.find((e) => e.id === id);
+        if (t) {
+            t.nom = (nom || '').trim();
+            t.prenom = (prenom || '').trim();
+            t.username = (username || '').trim();
+        }
     } else if (action === 'delete') {
-        cls.eleves = cls.eleves.filter((e) => e.id !== id);
+        db.teachers = db.teachers.filter((e) => e.id !== id);
     } else if (action === 'rekey') {
-        const s = cls.eleves.find((e) => e.id === id);
-        if (s) s.key = genKey();
+        const t = db.teachers.find((e) => e.id === id);
+        if (t) t.key = genKey();
     }
-    writeDB(db);
-    res.redirect('/admin');
-});
 
-/* ---------- class management (admin) ---------- */
-app.post('/admin/class', requireAdmin, (req, res) => {
-    const { action, classId, nom } = req.body;
-    const db = readDB();
-    if (action === 'add') {
-        const id = 'cls-' + Date.now().toString(36);
-        db.classes.push({ id, nom: (nom || '').trim(), eleves: [] });
-    } else if (action === 'update') {
-        const c = db.classes.find((x) => x.id === classId);
-        if (c) c.nom = (nom || '').trim();
-    } else if (action === 'delete') {
-        db.classes = db.classes.filter((x) => x.id !== classId);
-    }
     writeDB(db);
-    const keep = db.classes[0] ? db.classes[0].id : '';
-    res.redirect('/admin?c=' + keep);
+    const messages = {
+        add: { type: 'success', text: 'Enseignant ajouté avec succès.' },
+        update: { type: 'success', text: 'Enseignant modifié avec succès.' },
+        delete: { type: 'danger', text: 'Enseignant supprimé avec succès.' },
+        rekey: { type: 'warning', text: 'Clé régénérée avec succès.' }
+    };
+    if (messages[action]) req.session.adminNotice = messages[action];
+    if (req.get('X-Requested-With') === 'XMLHttpRequest') return res.sendStatus(204);
+    res.redirect('/admin');
 });
 app.get('/eleve', (req, res) => res.render('eleve', { error: false }));
 app.post('/eleve', (req, res) => {

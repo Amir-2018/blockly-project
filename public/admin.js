@@ -1,57 +1,135 @@
 /* public/admin.js — client wiring for the admin dashboard (uses server API) */
-document.querySelectorAll('.student-row').forEach((row) => {
+if (window.jQuery && $.fn.DataTable) {
+    $('#teacherTable').DataTable({
+        pageLength: 8,
+        lengthMenu: [5, 8, 10, 20],
+        searching: true,
+        ordering: true,
+        paging: true,
+        info: true,
+        language: {
+            search: 'Rechercher :',
+            lengthMenu: 'Afficher _MENU_ par page',
+            info: '_START_ à _END_ sur _TOTAL_ enseignants',
+            emptyTable: 'Aucun enseignant enregistré.',
+            zeroRecords: 'Aucun résultat trouvé.',
+            paginate: {
+                first: 'Premier',
+                previous: 'Précédent',
+                next: 'Suivant',
+                last: 'Dernier'
+            }
+        }
+    });
+}
+
+document.querySelectorAll('.teacher-row').forEach((row) => {
     const id = row.dataset.id;
-    const classId = row.dataset.class;
     const keyEl = row.querySelector('.stu-key code');
 
     row.querySelector('[data-act="copy"]').addEventListener('click', (e) => {
         const btn = e.currentTarget;
         navigator.clipboard?.writeText(keyEl.textContent.trim());
-        btn.textContent = '✓';
-        setTimeout(() => (btn.textContent = '⧉'), 1000);
+        btn.innerHTML = '<i class="fa-solid fa-check" aria-hidden="true"></i>';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-regular fa-copy" aria-hidden="true"></i>';
+        }, 1000);
     });
 
     row.querySelector('[data-act="edit"]').addEventListener('click', () => {
-        const nameParts = row.querySelector('.stu-name strong').textContent.trim().split(' ');
-        const prenom = nameParts.shift() || '';
-        const nom = nameParts.join(' ') || '';
-        const newNom = prompt('Nom de l\'élève :', nom);
-        if (newNom === null) return;
-        const newPrenom = prompt('Prénom de l\'élève :', prenom);
-        if (newPrenom === null) return;
-        api('/admin/student', 'update', { classId, id, nom: newNom.trim(), prenom: newPrenom.trim() });
+        const nom = row.querySelector('.teacher-name strong').textContent.trim();
+        const prenom = row.querySelector('.teacher-prenom').textContent.trim();
+        const username = row.querySelector('.teacher-username').textContent.trim();
+        openEditModal({ id, nom, prenom, username });
     });
 
     row.querySelector('[data-act="key"]').addEventListener('click', () => {
-        if (confirm('Régénérer la clé de cet élève ?')) api('/admin/student', 'rekey', { classId, id });
+        openConfirmModal(id, 'Régénérer la clé ?', 'La clé actuelle sera remplacée.', 'Régénérer', 'rekey');
     });
 
     row.querySelector('[data-act="del"]').addEventListener('click', () => {
-        if (confirm('Supprimer cet élève ?')) api('/admin/student', 'delete', { classId, id });
+        openConfirmModal(id, 'Supprimer cet enseignant ?', 'Cette action est définitive.', 'Supprimer', 'delete');
     });
 });
 
-/* ----- class management ----- */
-const classSelect = document.querySelector('select[name="c"]');
-if (classSelect) {
-    document.getElementById('renameClass').addEventListener('click', () => {
-        const current = classSelect.selectedOptions[0].textContent.replace(/\s*\(\d+\)$/, '');
-        const name = prompt('Nouveau nom de la classe :', current);
-        if (name === null) return;
-        api('/admin/class', 'update', { classId: classSelect.value, nom: name.trim() });
+const modal = document.getElementById('adminModal');
+const editForm = document.getElementById('editTeacherForm');
+const confirmActions = document.getElementById('confirmActions');
+const confirmButton = document.getElementById('confirmAction');
+let modalAction = null;
+
+function openEditModal(teacher) {
+    modalAction = { id: teacher.id, action: 'update' };
+    document.getElementById('modalTitle').textContent = 'Modifier l\'enseignant';
+    document.getElementById('modalMessage').textContent = 'Mets à jour les informations de connexion.';
+    document.getElementById('modalNom').value = teacher.nom;
+    document.getElementById('modalPrenom').value = teacher.prenom;
+    document.getElementById('modalUsername').value = teacher.username;
+    editForm.hidden = false;
+    confirmActions.hidden = true;
+    showModal();
+}
+
+function openConfirmModal(id, title, message, label, action) {
+    modalAction = { id, action };
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    confirmButton.textContent = label;
+    confirmButton.className = action === 'delete' ? 'mini action-delete' : 'mini action-key';
+    editForm.hidden = true;
+    confirmActions.hidden = false;
+    showModal();
+}
+
+function showModal() {
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+}
+
+function closeModal() {
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    modalAction = null;
+}
+
+document.querySelectorAll('[data-modal-close]').forEach((element) => {
+    element.addEventListener('click', closeModal);
+});
+
+editForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    api('/admin/teacher', 'update', {
+        id: modalAction.id,
+        nom: document.getElementById('modalNom').value.trim(),
+        prenom: document.getElementById('modalPrenom').value.trim(),
+        username: document.getElementById('modalUsername').value.trim()
     });
-    document.getElementById('delClass').addEventListener('click', () => {
-        if (confirm('Supprimer cette classe et tous ses élèves ?')) {
-            api('/admin/class', 'delete', { classId: classSelect.value });
-        }
-    });
+});
+
+confirmButton.addEventListener('click', () => {
+    api('/admin/teacher', modalAction.action, { id: modalAction.id });
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !modal.hidden) closeModal();
+});
+
+const notification = document.querySelector('.admin-notification');
+if (notification) {
+    notification.querySelector('.notification-close').addEventListener('click', () => notification.remove());
+    setTimeout(() => notification.remove(), 5000);
 }
 
 function api(url, action, fields) {
     const body = new URLSearchParams({ action, ...fields });
     fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body
     }).then(() => location.reload());
 }

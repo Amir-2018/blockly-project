@@ -1,18 +1,49 @@
 {
+  "teachers": [
+    {
+      "id": "t1",
+      "nom": "Martin",
+      "prenom": "Claire",
+      "username": "claire.martin",
+      "key": "KEY-D0C6842D"
+    },
+    {
+      "id": "tmterc5oy",
+      "nom": "dsd",
+      "prenom": "sdsd",
+      "username": "sdsd",
+      "key": "KEY-EEDF7757"
+    }
+  ],
   "classes": [
     {
       "id": "6A",
       "nom": "6ème A",
       "eleves": [
-        { "id": "e1", "nom": "Dupont", "prenom": "Jean", "key": "KEY-6A-JEAN" },
-        { "id": "e2", "nom": "Martin", "prenom": "Léa", "key": "KEY-6A-LEA" }
+        {
+          "id": "e1",
+          "nom": "Dupont",
+          "prenom": "Jean",
+          "key": "KEY-6A-JEAN"
+        },
+        {
+          "id": "e2",
+          "nom": "Martin",
+          "prenom": "Léa",
+          "key": "KEY-6A-LEA"
+        }
       ]
     },
     {
       "id": "5B",
       "nom": "5ème B",
       "eleves": [
-        { "id": "e3", "nom": "Bernard", "prenom": "Hugo", "key": "KEY-5B-HUGO" }
+        {
+          "id": "e3",
+          "nom": "Bernard",
+          "prenom": "Hugo",
+          "key": "KEY-5B-HUGO"
+        }
       ]
     },
     {

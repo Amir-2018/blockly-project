@@ -2,69 +2,138 @@
 <html lang="fr">
 <head>
     <%- include('head', { title: 'Admin — Amir Academy' }) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 </head>
-<body class="admin-page">
+<body class="landing auth-page admin-page">
     <%- include('navbar', { admin: true }) %>
+
+    <div class="landing-bg" aria-hidden="true">
+        <span class="blob blob-blue"></span>
+        <span class="blob blob-yellow"></span>
+        <span class="blob blob-blue2"></span>
+    </div>
+
+    <aside class="admin-sidebar" aria-label="Navigation administrateur">
+        <div class="admin-profile">
+            <span class="admin-avatar" aria-hidden="true">A</span>
+            <div>
+                <strong>Administrateur</strong>
+                <span>Compte connecté</span>
+            </div>
+        </div>
+        <nav class="admin-menu">
+            <a class="admin-menu-link active" href="/admin">
+                <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>
+                <span>Enseignants</span>
+            </a>
+            <a class="admin-menu-link" href="/eleve">
+                <i class="fa-solid fa-user-graduate" aria-hidden="true"></i>
+                <span>Élèves</span>
+            </a>
+        </nav>
+        <a class="admin-logout" href="/logout">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+            <span>Déconnexion</span>
+        </a>
+    </aside>
 
     <main class="admin-wrap">
         <header class="admin-head">
-            <h1>Gestion des élèves</h1>
-            <p>Sélectionne une classe, puis ajoute / modifie / supprime des élèves et génère leurs clés d'accès.</p>
+            <h1>Gestion des enseignants</h1>
+            <p>Ajoute, modifie ou régénère les clés d'accès des enseignants.</p>
         </header>
 
         <section class="admin-controls">
-            <div class="class-tools">
-                <form method="get" action="/admin" class="select-label">
-                    Classe
-                    <select name="c" onchange="this.form.submit()">
-                        <% classes.forEach(c => { %>
-                            <option value="<%= c.id %>" <%= c.id === current ? 'selected' : '' %>><%= c.nom %> (<%= c.eleves.length %>)</option>
-                        <% }); %>
-                    </select>
-                </form>
-                <div class="class-actions">
-                    <button type="button" class="mini" id="renameClass">Renommer</button>
-                    <button type="button" class="mini danger" id="delClass">Supprimer</button>
-                </div>
-            </div>
-
-            <form method="post" action="/admin/student" class="add-form">
+            <form method="post" action="/admin/teacher" class="add-form">
                 <input type="hidden" name="action" value="add" />
-                <input type="hidden" name="classId" value="<%= current %>" />
                 <input type="text" name="nom" placeholder="Nom" required />
                 <input type="text" name="prenom" placeholder="Prénom" required />
-                <button type="submit" class="cta cta-sm">+ Ajouter un élève</button>
-            </form>
-
-            <form method="post" action="/admin/class" class="add-form">
-                <input type="hidden" name="action" value="add" />
-                <input type="text" name="nom" placeholder="Nom de la classe" required />
-                <button type="submit" class="cta cta-sm">+ Ajouter une classe</button>
+                <input type="text" name="username" placeholder="Nom d'utilisateur" required />
+                <button type="submit" class="cta cta-sm">+ Ajouter un enseignant</button>
             </form>
         </section>
 
-        <section class="student-list" id="studentList">
-            <% const cls = classes.find(c => c.id === current); %>
-            <% if (!cls || cls.eleves.length === 0) { %>
-                <p class="empty">Aucun élève dans cette classe. Ajoute le premier ci-dessus.</p>
+        <section class="student-list" id="teacherList">
+            <% const teacherList = typeof teachers === 'undefined' ? [] : teachers; %>
+            <% if (teacherList.length === 0) { %>
+                <p class="empty">Aucun enseignant enregistré pour le moment.</p>
             <% } else { %>
-                <% cls.eleves.forEach(s => { %>
-                    <div class="student-row" data-id="<%= s.id %>" data-class="<%= current %>">
-                        <div class="stu-name"><strong><%= s.prenom %> <%= s.nom %></strong></div>
-                        <div class="stu-key"><code><%= s.key %></code>
-                            <button class="mini" data-act="copy" title="Copier">&#9095;</button>
-                        </div>
-                        <div class="stu-actions">
-                            <button class="mini" data-act="edit">Modifier</button>
-                            <button class="mini" data-act="key">Régénérer clé</button>
-                            <button class="mini danger" data-act="del">Supprimer</button>
-                        </div>
-                    </div>
-                <% }); %>
+                <table id="teacherTable" class="student-table display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th><i class="fa-solid fa-user" aria-hidden="true"></i> Nom</th>
+                            <th><i class="fa-solid fa-id-card" aria-hidden="true"></i> Prénom</th>
+                            <th><i class="fa-solid fa-at" aria-hidden="true"></i> Nom d'utilisateur</th>
+                            <th><i class="fa-solid fa-key" aria-hidden="true"></i> Clé</th>
+                            <th><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Modifier</th>
+                            <th><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Régénérer</th>
+                            <th><i class="fa-solid fa-trash" aria-hidden="true"></i> Supprimer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% teacherList.forEach(t => { %>
+                            <tr class="teacher-row" data-id="<%= t.id %>">
+                                <td class="teacher-name"><strong><%= t.nom %></strong></td>
+                                <td class="teacher-prenom"><%= t.prenom %></td>
+                                <td class="teacher-username"><%= t.username || '' %></td>
+                                <td class="stu-key">
+                                    <code><%= t.key %></code>
+                                    <button class="mini icon-button" data-act="copy" title="Copier la clé" aria-label="Copier la clé"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+                                </td>
+                                <td class="teacher-action"><button class="mini action-edit" data-act="edit" title="Modifier l'enseignant" aria-label="Modifier l'enseignant"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button></td>
+                                <td class="teacher-action"><button class="mini action-key" data-act="key" title="Régénérer la clé" aria-label="Régénérer la clé"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button></td>
+                                <td class="teacher-action"><button class="mini action-delete" data-act="del" title="Supprimer l'enseignant" aria-label="Supprimer l'enseignant"><i class="fa-solid fa-trash" aria-hidden="true"></i></button></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
             <% } %>
         </section>
     </main>
 
+    <% if (typeof notice !== 'undefined' && notice) { %>
+        <div class="admin-notification <%= notice.type %>" role="status">
+            <i class="fa-solid <%= notice.type === 'danger' ? 'fa-trash' : notice.type === 'warning' ? 'fa-key' : 'fa-circle-check' %>" aria-hidden="true"></i>
+            <span><%= notice.text %></span>
+            <button type="button" class="notification-close" aria-label="Fermer la notification">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+    <% } %>
+
+    <div class="admin-modal" id="adminModal" aria-hidden="true" hidden>
+        <div class="admin-modal-backdrop" data-modal-close></div>
+        <section class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button class="admin-modal-close" type="button" data-modal-close title="Fermer" aria-label="Fermer">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+            <h2 id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <form id="editTeacherForm" class="modal-form" hidden>
+                <label>Nom
+                    <input id="modalNom" type="text" required />
+                </label>
+                <label>Prénom
+                    <input id="modalPrenom" type="text" required />
+                </label>
+                <label>Nom d'utilisateur
+                    <input id="modalUsername" type="text" required />
+                </label>
+                <div class="admin-modal-actions">
+                    <button class="mini" type="button" data-modal-close>Annuler</button>
+                    <button class="cta cta-sm" type="submit">Enregistrer</button>
+                </div>
+            </form>
+            <div id="confirmActions" class="admin-modal-actions" hidden>
+                <button class="mini" type="button" data-modal-close>Annuler</button>
+                <button id="confirmAction" class="cta cta-sm" type="button"></button>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.12.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="/admin.js"></script>
 </body>
 </html>

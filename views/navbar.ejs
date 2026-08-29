@@ -9,7 +9,8 @@
         <% if (typeof showHome !== 'undefined' && showHome) { %><a class="nav-link" href="/">Accueil</a><% } %>
         <% if (typeof showTeacher !== 'undefined' && showTeacher) { %><a class="nav-link" href="/teacher">Espace enseignant</a><% } %>
         <% if (typeof showEleve !== 'undefined' && showEleve) { %><a class="nav-link" href="/eleve">Espace élève</a><% } %>
-        <a class="nav-btn" href="/login">Connexion</a>
-        <% if (typeof admin !== 'undefined' && admin) { %><span class="admin-pill">Admin</span><a class="nav-btn ghost" href="/logout">Déconnexion</a><% } %>
+        <% if (!(typeof admin !== 'undefined' && admin)) { %>
+            <a class="nav-btn" href="/login">Connexion</a>
+        <% } %>
     </div>
 </nav>
