@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Admin — Saved' }) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body class="landing auth-page admin-page saved-admin-page">
+    <%- include('navbar', { admin: true }) %>
+    <div class="landing-bg" aria-hidden="true"><span class="blob blob-blue"></span><span class="blob blob-yellow"></span><span class="blob blob-blue2"></span></div>
+    <aside class="admin-sidebar" aria-label="Navigation administrateur">
+        <div class="admin-profile"><span class="admin-avatar" aria-hidden="true">A</span><div><strong>Administrateur</strong><span>Compte connecté</span></div></div>
+        <nav class="admin-menu">
+            <a class="admin-menu-link" href="/admin"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i><span>Enseignants</span></a>
+            <a class="admin-menu-link" href="/admin?view=students"><i class="fa-solid fa-user-graduate" aria-hidden="true"></i><span>Élèves</span></a>
+            <a class="admin-menu-link" href="/admin?view=levels"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Niveaux</span></a>
+            <a class="admin-menu-link active" href="/admin?view=saved"><i class="fa-solid fa-bookmark" aria-hidden="true"></i><span>Saved</span></a>
+        </nav>
+        <a class="admin-logout" href="/logout"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Déconnexion</span></a>
+    </aside>
+    <main class="admin-wrap">
+        <header class="admin-head"><h1>Saved</h1><p>Blocs disponibles pour chaque niveau.</p></header>
+        <section class="saved-levels">
+            <% levels.forEach(level => { %>
+                <article class="saved-level-card" data-id="<%= level.id %>">
+                    <div class="saved-level-heading"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><h2><%= level.nom %></h2><a class="mini action-preview" data-level-id="<%= level.id %>" href="/admin/level/<%= encodeURIComponent(level.id) %>/preview?saved=1" title="Ouvrir les blocs enregistrés" aria-label="Ouvrir les blocs enregistrés"><i class="fa-solid fa-eye" aria-hidden="true"></i></a></div>
+                    <% if (level.blocks.length === 0) { %><p class="empty">Aucun bloc enregistré.</p><% } else { %>
+                        <div class="saved-block-list"><% level.blocks.forEach(block => { %><span class="saved-block"><i class="fa-solid fa-cube" aria-hidden="true"></i><%= block.label %></span><% }); %></div>
+                    <% } %>
+                </article>
+            <% }); %>
+        </section>
+    </main>
+    <div class="preview-modal" id="previewModal" aria-hidden="true" hidden>
+        <div class="admin-modal-backdrop" data-preview-close></div>
+        <section class="preview-modal-card" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+            <div class="preview-modal-header"><h2 id="previewTitle">Blocs Blockly</h2><button class="admin-modal-close" type="button" data-preview-close title="Fermer" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+            <iframe id="previewFrame" title="Prévisualisation des blocs enregistrés"></iframe>
+        </section>
+    </div>
+    <% if (typeof notice !== 'undefined' && notice) { %><div class="admin-notification <%= notice.type %>" role="status"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span><%= notice.text %></span><button type="button" class="notification-close" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><% } %>
+    <script src="/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Blocs Blockly — ' + level.nom }) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        body { background: #FFFFFF; }
+        #title, #pythonCode { display: none; }
+        .preview-toolbar { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #FFFFFF; color: #111827; border-bottom: 1px solid #E5E7EB; }
+        .preview-toolbar strong { font-family: Poppins, sans-serif; }
+        #saveBlocks { display: none; border: 0; border-radius: 8px; padding: 9px 14px; background: #51C1E5; color: #FFFFFF; font-weight: 700; cursor: pointer; }
+        #saveBlocks.visible { display: inline-flex; align-items: center; gap: 8px; }
+        #blocklyDiv { width: 100%; height: calc(100% - 54px); }
+    </style>
+</head>
+<body class="editor-page" data-preview="true" data-saved-only="<%= savedOnly ? 'true' : 'false' %>">
+    <h1 id="title" aria-hidden="true"></h1>
+    <header class="preview-toolbar"><strong>Blocs du niveau : <%= level.nom %></strong><button id="saveBlocks" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Enregistrer</button></header>
+    <div id="blocklyDiv"></div>
+    <pre id="pythonCode"><code></code></pre>
+    <script src="https://unpkg.com/blockly@9.2.0/blockly_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/blocks_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/python_compressed.js"></script>
+    <script src="https://unpkg.com/blockly@9.2.0/msg/en.js"></script>
+    <script>window.allowedBlockTypes = <%- JSON.stringify(savedOnly ? (level.savedBlocks || []) : null) %>;</script>
+    <script src="/app.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedBlocks = <%- JSON.stringify(level.blocks || null) %>;
+            const saveButton = document.getElementById('saveBlocks');
+            const savedTypes = new Set();
+            if (savedBlocks && window.levelWorkspace) Blockly.serialization.workspaces.load(savedBlocks, window.levelWorkspace);
+            window.levelWorkspace.addChangeListener((event) => {
+                if (!event.isUiEvent) saveButton.classList.add('visible');
+                savedTypes.clear();
+                window.levelWorkspace.getAllBlocks(false).forEach((block) => savedTypes.add(block.type));
+            });
+            saveButton.addEventListener('click', () => fetch('/admin/level/<%= encodeURIComponent(level.id) %>/saved-blocks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ types: [...savedTypes] })
+            }).then(() => { saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Enregistré'; saveButton.classList.remove('visible'); }));
+        });
+    </script>
+</body>
+</html>

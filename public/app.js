@@ -335,7 +335,9 @@ function initBlockly() {
     registerCustomBlocks();
 
     workspace = Blockly.inject('blocklyDiv', {
-        toolbox: TOOLBOX_XML,
+        toolbox: typeof window.allowedBlockTypes !== 'undefined' && window.allowedBlockTypes !== null
+            ? savedToolbox(window.allowedBlockTypes)
+            : TOOLBOX_XML,
         grid: { spacing: 22, length: 3, colour: 'rgba(255,255,255,0.08)', snap: true },
         zoom: { controls: true, wheel: true, startScale: 0.95, maxScale: 2, minScale: 0.4 },
         trashcan: true,
@@ -348,10 +350,55 @@ function initBlockly() {
     generateCode();
 }
 
+function savedToolbox(allowedTypes) {
+    const source = new DOMParser().parseFromString(TOOLBOX_XML, 'text/xml');
+    const saved = document.implementation.createDocument('', 'xml');
+    if (document.body.dataset.savedOnly === 'true' || document.body.classList.contains('editor-page')) {
+        const categoryColours = {
+            Logic: '#4B8BBE', Loops: '#3776AB', Math: '#2E6CA4', Text: '#5B9BD5',
+            'Data Structures': '#FFD43B', Robot: '#3776AB', Variables: '#306998', Functions: '#3E7CB1'
+        };
+        Array.from(source.documentElement.children).forEach((sourceCategory) => {
+            if (sourceCategory.tagName !== 'category') return;
+            const blocks = [...sourceCategory.children].filter((block) =>
+                block.tagName === 'block' && allowedTypes.includes(block.getAttribute('type'))
+            );
+            const customTypes = sourceCategory.getAttribute('custom') === 'PROCEDURE'
+                ? ['procedures_defreturn', 'procedures_defnoreturn', 'procedures_callreturn', 'procedures_callnoreturn', 'procedures_ifreturn']
+                : sourceCategory.getAttribute('custom') === 'VARIABLE'
+                    ? ['variables_get', 'variables_set']
+                    : [];
+            const matchingCustom = customTypes
+                .filter((type) => allowedTypes.includes(type))
+                .map((type) => {
+                    const block = saved.createElement('block');
+                    block.setAttribute('type', type);
+                    return block;
+                });
+            if (!blocks.length && !matchingCustom.length) return;
+            const category = saved.createElement('category');
+            category.setAttribute('name', sourceCategory.getAttribute('name'));
+            category.setAttribute('colour', categoryColours[sourceCategory.getAttribute('name')] || '#3776AB');
+            [...blocks, ...matchingCustom].forEach((block) => category.appendChild(saved.importNode(block, true)));
+            saved.documentElement.appendChild(category);
+        });
+        return saved.documentElement.outerHTML;
+    }
+    const category = saved.createElement('category');
+    category.setAttribute('name', 'Saved');
+    category.setAttribute('colour', '#3776AB');
+    source.querySelectorAll('block').forEach((block) => {
+        if (allowedTypes.includes(block.getAttribute('type'))) category.appendChild(saved.importNode(block, true));
+    });
+    saved.documentElement.appendChild(category);
+    return saved.documentElement.outerHTML;
+}
+
 /* Modern Blockly theme — Python colours */
 function blocklyTheme() {
-    return Blockly.Theme.defineTheme('modernDark', {
-        name: 'modernDark',
+    const lightEditor = document.body.classList.contains('editor-page');
+    return Blockly.Theme.defineTheme(lightEditor ? 'modernLight' : 'modernDark', {
+        name: lightEditor ? 'modernLight' : 'modernDark',
         base: Blockly.Themes.Classic,
         blockStyles: {
             logic_blocks: { colourPrimary: '#4B8BBE' },
@@ -363,12 +410,12 @@ function blocklyTheme() {
             procedure_blocks: { colourPrimary: '#3E7CB1' }
         },
         componentStyles: {
-            workspaceBackgroundColour: '#0b1326',
-            toolboxBackgroundColour: '#0a1124',
-            toolboxForegroundColour: '#dbe6f5',
-            flyoutBackgroundColour: '#0a1124',
-            flyoutForegroundColour: '#dbe6f5',
-            scrollbarColour: '#2a3f5f',
+            workspaceBackgroundColour: lightEditor ? '#FFFFFF' : '#0b1326',
+            toolboxBackgroundColour: lightEditor ? '#F8FAFC' : '#0a1124',
+            toolboxForegroundColour: lightEditor ? '#111827' : '#dbe6f5',
+            flyoutBackgroundColour: lightEditor ? '#FFFFFF' : '#0a1124',
+            flyoutForegroundColour: lightEditor ? '#111827' : '#dbe6f5',
+            scrollbarColour: lightEditor ? '#CBD5E1' : '#2a3f5f',
             insertionMarkerColour: '#FFD43B',
             cursorColour: '#4B8BBE'
         }
@@ -534,6 +581,18 @@ function downloadPDF() {
 
 /* ------------------------------ UI wiring ------------------------------- */
 function wireUI() {
+    const accountMenuBtn = document.getElementById('accountMenuBtn');
+    const accountMenu = document.getElementById('accountMenu');
+    accountMenuBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        accountMenu.hidden = !accountMenu.hidden;
+        accountMenuBtn.setAttribute('aria-expanded', String(!accountMenu.hidden));
+    });
+    document.addEventListener('click', () => {
+        accountMenu.hidden = true;
+        accountMenuBtn.setAttribute('aria-expanded', 'false');
+    });
+
     runBtn.addEventListener('click', runCode);
     document.getElementById('genBtn').addEventListener('click', generateCode);
     document.getElementById('clearBtn').addEventListener('click', () => {
@@ -903,7 +962,7 @@ function loadSample() {
 /* --------------------------- Animated title ----------------------------- */
 function animateTitle() {
     const el = document.getElementById('title');
-    const text = 'Lire Python avec Amir Academy';
+    const text = 'Amir Academy';
     el.innerHTML = '';
     [...text].forEach((ch, i) => {
         const span = document.createElement('span');
@@ -929,5 +988,9 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
     initBlockly();
-    wireUI();
+    if (document.body.dataset.preview === 'true') {
+        window.levelWorkspace = workspace;
+    } else {
+        wireUI();
+    }
 });

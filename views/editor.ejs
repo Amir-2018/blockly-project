@@ -2,22 +2,35 @@
 <html lang="en">
 <head>
     <%- include('head', { title: 'Éditeur Python — Amir Academy' }) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
-<body>
+<body class="editor-page">
     <header class="app-header">
         <div class="header-inner">
-            <h1 class="animated-title" id="title" aria-label="Lire Python avec Amir Academy"></h1>
-            <p class="subtitle">Élève : <%= student.prenom %> <%= student.nom %> — <%= student.classe %></p>
+            <div class="editor-brand">
+                <span class="editor-brand-badge"><img src="/images/Gemini_Generated_Image_81m0sb81m0sb81m0.jpeg" alt="Logo Amir Academy" /></span>
+                <div>
+                    <h3 class="animated-title" id="title" aria-label="Amir Academy" ></h1>
+                    <p class="subtitle">Élève : <%= student.prenom %> <%= student.nom %> — <%= student.classe %></p>
+                </div>
+            </div>
         </div>
         <nav class="top-nav">
-            <a class="nav-btn ghost" href="/">&#8592; Accueil</a>
-            <a class="nav-btn ghost" href="/logout">Déconnexion</a>
+          
             <button class="nav-btn" id="runBtn" title="Run the generated Python">
                 <span class="play-icon">&#9654;</span> Run
             </button>
             <button class="nav-btn ghost" id="genBtn" title="Refresh generated code">Generate</button>
             <button class="nav-btn ghost" id="clearBtn" title="Clear the workspace">Clear</button>
             <button class="nav-btn ghost" id="sampleBtn" title="Load a sample program">Sample</button>
+          <div class="account-menu">
+                <button class="nav-btn ghost account-menu-btn" id="accountMenuBtn" type="button" title="Menu du compte" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                </button>
+                <div class="account-menu-list" id="accountMenu" hidden>
+                    <a href="/logout"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Déconnexion</a>
+                </div>
+            </div>
         </nav>
     </header>
 
@@ -65,6 +78,7 @@
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
     <!-- jsPDF to export the generated code as a PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>window.allowedBlockTypes = <%- JSON.stringify(typeof allowedBlockTypes !== 'undefined' ? allowedBlockTypes : null) %>;</script>
 
     <script src="/app.js"></script>
 </body>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <%- include('head', { title: 'Admin — Gestion des niveaux' }) %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body class="landing auth-page admin-page levels-admin-page">
+    <%- include('navbar', { admin: true }) %>
+
+    <div class="landing-bg" aria-hidden="true">
+        <span class="blob blob-blue"></span><span class="blob blob-yellow"></span><span class="blob blob-blue2"></span>
+    </div>
+
+    <aside class="admin-sidebar" aria-label="Navigation administrateur">
+        <div class="admin-profile"><span class="admin-avatar" aria-hidden="true">A</span><div><strong>Administrateur</strong><span>Compte connecté</span></div></div>
+        <nav class="admin-menu">
+            <a class="admin-menu-link" href="/admin"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i><span>Enseignants</span></a>
+            <a class="admin-menu-link" href="/admin?view=students"><i class="fa-solid fa-user-graduate" aria-hidden="true"></i><span>Élèves</span></a>
+            <a class="admin-menu-link active" href="/admin?view=levels"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Niveaux</span></a>
+        </nav>
+        <a class="admin-logout" href="/logout"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Déconnexion</span></a>
+    </aside>
+
+    <main class="admin-wrap">
+        <header class="admin-head">
+            <h1>Gestion des niveaux</h1>
+            <p>Crée les niveaux de l'établissement.</p>
+        </header>
+
+        <section class="admin-controls">
+            <form method="post" action="/admin/level" class="add-form">
+                <input type="hidden" name="action" value="add" />
+                <input type="text" name="nom" placeholder="Nom du niveau" aria-label="Nom du niveau" required />
+                <button type="submit" class="cta cta-sm"><i class="fa-solid fa-plus" aria-hidden="true"></i> Ajouter un niveau</button>
+            </form>
+        </section>
+
+        <section class="level-cards" aria-label="Niveaux disponibles">
+            <% if (!levels || levels.length === 0) { %>
+                <p class="empty">Aucun niveau enregistré pour le moment.</p>
+            <% } else { %>
+                <% levels.forEach(level => { %>
+                    <article class="level-card" data-id="<%= level.id %>">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                        <h2 class="level-name"><%= level.nom %></h2>
+                        <% if (level.blocks && level.blocks.length) { %>
+                            <div class="saved-block-list"><% level.blocks.forEach(block => { %><span class="saved-block"><i class="fa-solid fa-cube" aria-hidden="true"></i><%= block.label %></span><% }); %></div>
+                        <% } else { %>
+                            <p class="level-empty">Aucun bloc enregistré.</p>
+                        <% } %>
+                        <div class="level-card-actions">
+                            <button class="mini action-preview" data-level-act="preview" title="Voir les blocs Blockly" aria-label="Voir les blocs Blockly"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
+                            <button class="mini action-edit" data-level-act="edit" title="Modifier le niveau" aria-label="Modifier le niveau"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
+                            <button class="mini action-delete" data-level-act="del" title="Supprimer le niveau" aria-label="Supprimer le niveau"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+                        </div>
+                    </article>
+                <% }); %>
+            <% } %>
+        </section>
+    </main>
+
+    <div class="admin-modal" id="adminModal" aria-hidden="true" hidden>
+        <div class="admin-modal-backdrop" data-modal-close></div>
+        <section class="admin-modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <button class="admin-modal-close" type="button" data-modal-close title="Fermer" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <h2 id="modalTitle"></h2><p id="modalMessage"></p>
+            <form id="editLevelForm" class="modal-form" hidden>
+                <label>Nom du niveau<input id="modalLevelName" type="text" required /></label>
+                <div class="admin-modal-actions"><button class="mini" type="button" data-modal-close>Annuler</button><button class="cta cta-sm" type="submit">Enregistrer</button></div>
+            </form>
+            <div id="confirmActions" class="admin-modal-actions" hidden><button class="mini" type="button" data-modal-close>Annuler</button><button id="confirmAction" class="cta cta-sm" type="button"></button></div>
+        </section>
+    </div>
+
+    <div class="preview-modal" id="previewModal" aria-hidden="true" hidden>
+        <div class="admin-modal-backdrop" data-preview-close></div>
+        <section class="preview-modal-card" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+            <div class="preview-modal-header">
+                <h2 id="previewTitle">Blocs Blockly</h2>
+                <button class="admin-modal-close" type="button" data-preview-close title="Fermer" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            </div>
+            <iframe id="previewFrame" title="Prévisualisation des blocs Blockly"></iframe>
+        </section>
+    </div>
+
+    <% if (typeof notice !== 'undefined' && notice) { %><div class="admin-notification <%= notice.type %>" role="status"><i class="fa-solid <%= notice.type === 'danger' ? 'fa-trash' : 'fa-circle-check' %>" aria-hidden="true"></i><span><%= notice.text %></span><button type="button" class="notification-close" aria-label="Fermer la notification"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><% } %>
+    <script src="/admin.js"></script>
+</body>
+</html>
