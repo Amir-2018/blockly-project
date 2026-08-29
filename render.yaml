@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: amir-academy
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
