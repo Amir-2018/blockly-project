@@ -13,14 +13,20 @@
         </header>
 
         <section class="admin-controls">
-            <form method="get" action="/admin" class="select-label">
-                Classe
-                <select name="c" onchange="this.form.submit()">
-                    <% classes.forEach(c => { %>
-                        <option value="<%= c.id %>" <%= c.id === current ? 'selected' : '' %>><%= c.nom %> (<%= c.eleves.length %>)</option>
-                    <% }); %>
-                </select>
-            </form>
+            <div class="class-tools">
+                <form method="get" action="/admin" class="select-label">
+                    Classe
+                    <select name="c" onchange="this.form.submit()">
+                        <% classes.forEach(c => { %>
+                            <option value="<%= c.id %>" <%= c.id === current ? 'selected' : '' %>><%= c.nom %> (<%= c.eleves.length %>)</option>
+                        <% }); %>
+                    </select>
+                </form>
+                <div class="class-actions">
+                    <button type="button" class="mini" id="renameClass">Renommer</button>
+                    <button type="button" class="mini danger" id="delClass">Supprimer</button>
+                </div>
+            </div>
 
             <form method="post" action="/admin/student" class="add-form">
                 <input type="hidden" name="action" value="add" />
@@ -28,6 +34,12 @@
                 <input type="text" name="nom" placeholder="Nom" required />
                 <input type="text" name="prenom" placeholder="Prénom" required />
                 <button type="submit" class="cta cta-sm">+ Ajouter un élève</button>
+            </form>
+
+            <form method="post" action="/admin/class" class="add-form">
+                <input type="hidden" name="action" value="add" />
+                <input type="text" name="nom" placeholder="Nom de la classe" required />
+                <button type="submit" class="cta cta-sm">+ Ajouter une classe</button>
             </form>
         </section>
 

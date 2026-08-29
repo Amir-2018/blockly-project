@@ -443,6 +443,41 @@ body.landing {
     z-index: 1; opacity: 0.7;
 }
 
+/* 3D robot background canvas (Three.js) */
+.robot3d-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+.auth-card { position: relative; z-index: 1; }
+
+/* ============================ Accueil — custom theme ======================
+   Palette: #0D1D37 (fond), #51C1E5 (cyan), #FEDA4F (jaune), #FFFFFF (texte) */
+body.landing {
+    --bg-0: #0D1D37;
+    --bg-1: #0D1D37;
+    --bg-2: #0D1D37;
+    --py-blue: #51C1E5;
+    --py-blue-light: #51C1E5;
+    --py-blue-dark: #0D1D37;
+    --py-yellow: #FEDA4F;
+    --py-yellow-light: #FEDA4F;
+    --accent: #51C1E5;
+    --accent-2: #FEDA4F;
+    --text: #FFFFFF;
+    --text-dim: #BFD8E6;
+    background:
+        radial-gradient(1200px 620px at 8% -12%, rgba(81, 193, 229, 0.22), transparent 60%),
+        radial-gradient(1000px 520px at 100% 0%, rgba(254, 218, 79, 0.16), transparent 55%),
+        linear-gradient(160deg, #0D1D37, #0D1D37 60%, #0D1D37);
+}
+/* Badge Py + CTA + titre héritent des variables ci-dessus (cyan/jaune) */
+body.landing .py-badge { color: #0D1D37; }
+body.landing .cta { color: #0D1D37; }
+
 /* ============================ Topbar / navbar ============================ */
 .topbar {
     position: relative;
@@ -558,6 +593,8 @@ body.landing {
     background: rgba(255, 255, 255, 0.05); color: var(--text); font: inherit;
 }
 .add-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.class-tools { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+.class-actions { display: flex; gap: 8px; }
 .add-form input {
     padding: 11px 14px; border-radius: 11px;
     border: 1px solid var(--panel-border);

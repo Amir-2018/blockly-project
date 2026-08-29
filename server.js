@@ -105,13 +105,33 @@ app.post('/admin/student', requireAdmin, (req, res) => {
     res.redirect('/admin');
 });
 
-/* ---------- student gate ---------- */
+/* ---------- class management (admin) ---------- */
+app.post('/admin/class', requireAdmin, (req, res) => {
+    const { action, classId, nom } = req.body;
+    const db = readDB();
+    if (action === 'add') {
+        const id = 'cls-' + Date.now().toString(36);
+        db.classes.push({ id, nom: (nom || '').trim(), eleves: [] });
+    } else if (action === 'update') {
+        const c = db.classes.find((x) => x.id === classId);
+        if (c) c.nom = (nom || '').trim();
+    } else if (action === 'delete') {
+        db.classes = db.classes.filter((x) => x.id !== classId);
+    }
+    writeDB(db);
+    const keep = db.classes[0] ? db.classes[0].id : '';
+    res.redirect('/admin?c=' + keep);
+});
 app.get('/eleve', (req, res) => res.render('eleve', { error: false }));
 app.post('/eleve', (req, res) => {
     const key = (req.body.key || '').trim();
+    const nom = (req.body.nom || '').trim().toLowerCase();
+    const prenom = (req.body.prenom || '').trim().toLowerCase();
     const db = readDB();
     const found = findStudent(db, key);
-    if (found) {
+    if (found &&
+        found.eleve.nom.trim().toLowerCase() === nom &&
+        found.eleve.prenom.trim().toLowerCase() === prenom) {
         req.session.student = {
             id: found.eleve.id,
             nom: found.eleve.nom,

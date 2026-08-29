@@ -19,21 +19,37 @@ document.querySelectorAll('.student-row').forEach((row) => {
         if (newNom === null) return;
         const newPrenom = prompt('Prénom de l\'élève :', prenom);
         if (newPrenom === null) return;
-        api('update', { classId, id, nom: newNom.trim(), prenom: newPrenom.trim() });
+        api('/admin/student', 'update', { classId, id, nom: newNom.trim(), prenom: newPrenom.trim() });
     });
 
     row.querySelector('[data-act="key"]').addEventListener('click', () => {
-        if (confirm('Régénérer la clé de cet élève ?')) api('rekey', { classId, id });
+        if (confirm('Régénérer la clé de cet élève ?')) api('/admin/student', 'rekey', { classId, id });
     });
 
     row.querySelector('[data-act="del"]').addEventListener('click', () => {
-        if (confirm('Supprimer cet élève ?')) api('delete', { classId, id });
+        if (confirm('Supprimer cet élève ?')) api('/admin/student', 'delete', { classId, id });
     });
 });
 
-function api(action, fields) {
+/* ----- class management ----- */
+const classSelect = document.querySelector('select[name="c"]');
+if (classSelect) {
+    document.getElementById('renameClass').addEventListener('click', () => {
+        const current = classSelect.selectedOptions[0].textContent.replace(/\s*\(\d+\)$/, '');
+        const name = prompt('Nouveau nom de la classe :', current);
+        if (name === null) return;
+        api('/admin/class', 'update', { classId: classSelect.value, nom: name.trim() });
+    });
+    document.getElementById('delClass').addEventListener('click', () => {
+        if (confirm('Supprimer cette classe et tous ses élèves ?')) {
+            api('/admin/class', 'delete', { classId: classSelect.value });
+        }
+    });
+}
+
+function api(url, action, fields) {
     const body = new URLSearchParams({ action, ...fields });
-    fetch('/admin/student', {
+    fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body

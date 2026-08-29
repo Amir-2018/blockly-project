@@ -8,15 +8,24 @@
 
     <main class="auth-card">
         <h1>Espace élève</h1>
-        <p class="auth-sub">Entre la clé fournie par ton professeur pour accéder à l'éditeur.</p>
+        <p class="auth-sub">Entre ta clé et ton identité pour accéder à l'éditeur.</p>
         <form class="auth-form" method="post" action="/eleve" autocomplete="off">
             <label>Clé d'accès
                 <input type="text" name="key" placeholder="KEY-XXXX-..." required />
             </label>
+            <label>Nom
+                <input type="text" name="nom" placeholder="Ton nom" required />
+            </label>
+            <label>Prénom
+                <input type="text" name="prenom" placeholder="Ton prénom" required />
+            </label>
             <button type="submit" class="cta cta-block">Accéder à l'éditeur</button>
-            <% if (error) { %><p class="auth-error">Clé invalide. Vérifie et réessaie.</p><% } %>
+            <% if (error) { %><p class="auth-error">Clé ou identité invalide. Vérifie et réessaie.</p><% } %>
         </form>
         <a class="auth-back" href="/">&#8592; Retour à l'accueil</a>
     </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="/robot3d.js"></script>
 </body>
 </html>
