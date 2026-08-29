@@ -471,7 +471,7 @@ body.landing {
 .auth-card { position: relative; z-index: 1; }
 
 /* ============================ Accueil — custom theme ======================
-   Fond #FFFFFF, navbar + carte gauche + boutons en #51C1E5, accent #FEDA4F */
+   Fond blanc, navbar + carte gauche #0D1D37, boutons #0D1D37 texte blanc gras */
 body.landing {
     --bg-0: #FFFFFF;
     --bg-1: #FFFFFF;
@@ -482,32 +482,28 @@ body.landing {
     --py-yellow: #FEDA4F;
     --py-yellow-light: #FEDA4F;
     --accent: #51C1E5;
-    --accent-2: #0D1D37;
-    --text: #0D1D37;
-    --text-dim: #2a4a63;
+    --accent-2: #FEDA4F;
+    --text: #FFFFFF;
+    --text-dim: #BFD8E6;
     background: #FFFFFF;
 }
-/* Navbar cyan */
-body.landing .topbar { background: #51C1E5; border-bottom: 1px solid rgba(13, 29, 55, 0.18); }
-body.landing .brand, body.landing .nav-link { color: #0D1D37; }
-/* Carte gauche cyan */
+/* Navbar #0D1D37, texte blanc */
+body.landing .topbar { background: #0D1D37; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+body.landing .brand, body.landing .nav-link { color: #FFFFFF; }
+/* Carte gauche #0D1D37, texte blanc */
 body.landing .landing-card {
-    background: #51C1E5;
+    background: #0D1D37;
     border: none;
-    box-shadow: 0 18px 50px rgba(13, 29, 55, 0.18);
-    color: #0D1D37;
+    box-shadow: 0 18px 50px rgba(13, 29, 55, 0.25);
+    color: #FFFFFF;
 }
-body.landing .landing-lead, body.landing .landing-hint, body.landing .feature { color: #0D1D37; }
-/* Boutons cyan */
-body.landing .nav-btn {
-    background: #51C1E5; color: #0D1D37;
-    border: 2px solid #0D1D37; box-shadow: none;
+body.landing .landing-lead, body.landing .landing-hint, body.landing .feature { color: #FFFFFF; }
+/* Boutons #0D1D37, texte blanc gras, liseré blanc pour rester visibles */
+body.landing .nav-btn, body.landing .cta {
+    background: #0D1D37; color: #FFFFFF; font-weight: 700;
+    border: 2px solid #FFFFFF; box-shadow: none;
 }
-body.landing .nav-btn.ghost { background: transparent; color: #0D1D37; border-color: rgba(13, 29, 55, 0.4); }
-body.landing .cta {
-    background: #51C1E5; color: #0D1D37;
-    border: 2px solid #0D1D37; box-shadow: none;
-}
+body.landing .nav-btn.ghost { background: transparent; color: #FFFFFF; border-color: #FFFFFF; }
 body.landing .py-badge { color: #0D1D37; background: linear-gradient(135deg, #FEDA4F, #FFFFFF 60%, #51C1E5); }
 
 /* ============================ Topbar / navbar ============================ */
