@@ -46,6 +46,10 @@ function requireAdmin(req, res, next) {
     if (req.session.admin) return next();
     return res.redirect('/login');
 }
+function requireManager(req, res, next) {
+    if (req.session.admin || req.session.teacher) return next();
+    return res.redirect('/login');
+}
 function requireStudent(req, res, next) {
     if (req.session.student) return next();
     return res.redirect('/eleve');
@@ -90,9 +94,9 @@ app.post('/teacher', (req, res) => {
         ? db.teachers.find((item) => item.username === user && item.key === pass)
         : null;
 
-    if (teacher || ((user === 'enseignant' || user === 'teacher') && TEACHER_KEYS.has(pass))) {
+    if (teacher) {
         req.session.teacher = true;
-        return res.redirect('/admin');
+        return res.redirect('/admin?view=students');
     }
 
     return res.render('teacher', { error: true });
@@ -103,18 +107,19 @@ app.get('/logout', (req, res) => {
 });
 
 /* ---------- admin dashboard ---------- */
-app.get('/admin', requireAdmin, (req, res) => {
+app.get('/admin', requireManager, (req, res) => {
     const db = readDB();
     if (!Array.isArray(db.teachers)) db.teachers = [];
     const notice = req.session.adminNotice || null;
     delete req.session.adminNotice;
+    if (req.session.teacher && !['students', 'levels'].includes(req.query.view)) return res.redirect('/admin?view=students');
     if (req.query.view === 'students') {
         const students = db.classes.flatMap((classe) => classe.eleves.map((eleve) => ({
             ...eleve,
             classId: classe.id,
             className: classe.nom
         })));
-        return res.render('students', { students, classes: db.classes, notice });
+        return res.render('students', { students, classes: db.classes, notice, isTeacher: !!req.session.teacher });
     }
     if (req.query.view === 'levels') {
         const blockLabels = {
@@ -144,7 +149,7 @@ app.get('/admin', requireAdmin, (req, res) => {
             nom,
             blocks: (Array.isArray(savedBlocks) ? savedBlocks : []).map((type) => ({ type, label: blockLabels[type] || type.replace(/_/g, ' ') }))
         }));
-        return res.render('levels', { levels, notice });
+        return res.render('levels', { levels, notice, isTeacher: !!req.session.teacher });
     }
     if (req.query.view === 'saved') {
         const blockLabels = {
@@ -217,8 +222,8 @@ app.post('/admin/teacher', requireAdmin, (req, res) => {
     res.redirect('/admin');
 });
 
-app.post('/admin/student', requireAdmin, (req, res) => {
-    const { action, classId, id, nom, prenom } = req.body;
+app.post('/admin/student', requireManager, (req, res) => {
+    const { action, classId, id, nom, prenom, username } = req.body;
     const db = readDB();
     const classe = db.classes.find((item) => item.id === classId);
     const student = classe && classe.eleves.find((item) => item.id === id);
@@ -228,11 +233,13 @@ app.post('/admin/student', requireAdmin, (req, res) => {
             id: 's' + Date.now().toString(36),
             nom: (nom || '').trim(),
             prenom: (prenom || '').trim(),
+            username: (username || '').trim(),
             key: genStudentKey(classe)
         });
     } else if (action === 'update' && student) {
         student.nom = (nom || '').trim();
         student.prenom = (prenom || '').trim();
+        student.username = (username || '').trim();
     } else if (action === 'delete' && student) {
         classe.eleves = classe.eleves.filter((item) => item.id !== id);
     } else if (action === 'rekey' && student) {
@@ -251,7 +258,7 @@ app.post('/admin/student', requireAdmin, (req, res) => {
     res.redirect('/admin?view=students');
 });
 
-app.post('/admin/level', requireAdmin, (req, res) => {
+app.post('/admin/level', requireManager, (req, res) => {
     const { action, id, nom } = req.body;
     const db = readDB();
     const name = (nom || '').trim();
@@ -282,7 +289,7 @@ app.post('/admin/level', requireAdmin, (req, res) => {
     if (req.get('X-Requested-With') === 'XMLHttpRequest') return res.sendStatus(204);
     res.redirect('/admin?view=levels');
 });
-app.get('/admin/level/:id/preview', requireAdmin, (req, res) => {
+app.get('/admin/level/:id/preview', requireManager, (req, res) => {
     const db = readDB();
     const level = db.classes.find((item) => item.id === req.params.id);
     if (!level) return res.status(404).send('Niveau introuvable');
@@ -291,7 +298,7 @@ app.get('/admin/level/:id/preview', requireAdmin, (req, res) => {
         savedOnly: req.query.saved === '1'
     });
 });
-app.post('/admin/level/:id/blocks', requireAdmin, (req, res) => {
+app.post('/admin/level/:id/blocks', requireManager, (req, res) => {
     const db = readDB();
     const level = db.classes.find((item) => item.id === req.params.id);
     if (!level) return res.sendStatus(404);
@@ -299,7 +306,7 @@ app.post('/admin/level/:id/blocks', requireAdmin, (req, res) => {
     writeDB(db);
     res.sendStatus(204);
 });
-app.post('/admin/level/:id/saved-blocks', requireAdmin, (req, res) => {
+app.post('/admin/level/:id/saved-blocks', requireManager, (req, res) => {
     const db = readDB();
     const level = db.classes.find((item) => item.id === req.params.id);
     if (!level) return res.sendStatus(404);
@@ -312,11 +319,11 @@ app.post('/admin/level/:id/saved-blocks', requireAdmin, (req, res) => {
 app.get('/eleve', (req, res) => res.render('eleve', { error: false }));
 app.post('/eleve', (req, res) => {
     const key = (req.body.key || '').trim();
-    const nom = (req.body.nom || '').trim().toLowerCase();
+    const username = (req.body.username || '').trim().toLowerCase();
     const db = readDB();
     const found = findStudent(db, key);
 
-    if (found && found.eleve.nom.trim().toLowerCase() === nom) {
+    if (found && found.eleve.username && found.eleve.username.trim().toLowerCase() === username) {
         req.session.student = {
             id: found.eleve.id,
             nom: found.eleve.nom,

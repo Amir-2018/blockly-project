@@ -14,7 +14,7 @@
     <aside class="admin-sidebar" aria-label="Navigation administrateur">
         <div class="admin-profile"><span class="admin-avatar" aria-hidden="true">A</span><div><strong>Administrateur</strong><span>Compte connecté</span></div></div>
         <nav class="admin-menu">
-            <a class="admin-menu-link" href="/admin"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i><span>Enseignants</span></a>
+            <% if (!isTeacher) { %><a class="admin-menu-link" href="/admin"><i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i><span>Enseignants</span></a><% } %>
             <a class="admin-menu-link" href="/admin?view=students"><i class="fa-solid fa-user-graduate" aria-hidden="true"></i><span>Élèves</span></a>
             <a class="admin-menu-link active" href="/admin?view=levels"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Niveaux</span></a>
         </nav>

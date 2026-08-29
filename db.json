@@ -24,12 +24,14 @@
           "id": "e1",
           "nom": "Dupont",
           "prenom": "Jean",
+          "username": "jean.dupont",
           "key": "KEY-6A-6AJEAN01"
         },
         {
           "id": "e2",
           "nom": "Martin",
           "prenom": "Léa",
+          "username": "lea.martin",
           "key": "KEY-6A-6ALEA002"
         },
         {
@@ -72,12 +74,14 @@
           "id": "e3",
           "nom": "Bernard",
           "prenom": "Hugo",
+          "username": "hugo.bernard.eleve",
           "key": "KEY-5B-5BHUGO01"
         },
         {
           "id": "smtesznm8",
           "nom": "aa",
           "prenom": "aa",
+          "username": "aa.aa",
           "key": "KEY-5B-56165EA7"
         }
       ],
