@@ -6,7 +6,7 @@
       "prenom": "Claire",
       "username": "claire.martin",
       "key": "KEY-D0C6842D",
-      "loginSuccessCount": 2
+      "loginSuccessCount": 3
     },
     {
       "id": "tmterc5oy",
@@ -36,7 +36,7 @@
           "prenom": "Léa",
           "username": "lea.martin",
           "key": "KEY-6A-6ALEA002",
-          "loginSuccessCount": 2
+          "loginSuccessCount": 4
         }
       ],
       "blocks": {
@@ -61,7 +61,42 @@
         "logic_negate",
         "controls_repeat",
         "math_arithmetic",
-        "text"
+        "text",
+        "logic_boolean",
+        "logic_null",
+        "logic_ternary",
+        "math_number",
+        "math_single",
+        "math_number_property",
+        "math_round",
+        "math_modulo",
+        "math_constrain",
+        "math_random_int",
+        "math_random_float",
+        "lists_create_with",
+        "lists_repeat",
+        "lists_length",
+        "lists_isEmpty",
+        "lists_indexOf",
+        "lists_getIndex",
+        "lists_setIndex",
+        "lists_getSublist",
+        "lists_split",
+        "lists_sort",
+        "lists_reverse",
+        "dict_create_empty",
+        "dict_create_pairs",
+        "dict_get",
+        "dict_set",
+        "set_create",
+        "set_add",
+        "tuple_create",
+        "robot_forward",
+        "robot_backward",
+        "robot_turn_left",
+        "robot_turn_right",
+        "robot_pen",
+        "robot_repeat_square"
       ]
     },
     {
@@ -74,7 +109,7 @@
           "prenom": "Hugo",
           "username": "hugo.bernard.eleve",
           "key": "KEY-5B-5BHUGO01",
-          "loginSuccessCount": 0
+          "loginSuccessCount": 1
         },
         {
           "id": "smtesznm8",
