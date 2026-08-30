@@ -43,14 +43,8 @@
                     <article class="level-card" data-id="<%= level.id %>">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
                         <h2 class="level-name"><%= level.nom %></h2>
-                        <% if (level.blocks && level.blocks.length) { %>
-                            <div class="saved-block-list"><% level.blocks.forEach(block => { %><span class="saved-block"><i class="fa-solid fa-cube" aria-hidden="true"></i><%= block.label %></span><% }); %></div>
-                        <% } else { %>
-                            <p class="level-empty">Aucun bloc enregistré.</p>
-                        <% } %>
                         <div class="level-card-actions">
-                            <button class="mini action-preview" data-level-act="preview" title="Voir les blocs Blockly" aria-label="Voir les blocs Blockly"><i class="fa-solid fa-eye" aria-hidden="true"></i></button>
-                            <button class="mini action-edit" data-level-act="edit" title="Modifier le niveau" aria-label="Modifier le niveau"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
+                            <button class="mini action-preview" data-level-act="preview" title="Voir les blocs Blockly" aria-label="Voir les blocs Blockly"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></button>
                             <button class="mini action-delete" data-level-act="del" title="Supprimer le niveau" aria-label="Supprimer le niveau"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
                         </div>
                     </article>
@@ -74,9 +68,8 @@
 
     <div class="preview-modal" id="previewModal" aria-hidden="true" hidden>
         <div class="admin-modal-backdrop" data-preview-close></div>
-        <section class="preview-modal-card" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+        <section class="preview-modal-card" role="dialog" aria-modal="true">
             <div class="preview-modal-header">
-                <h2 id="previewTitle">Blocs Blockly</h2>
                 <button class="admin-modal-close" type="button" data-preview-close title="Fermer" aria-label="Fermer"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
             <iframe id="previewFrame" title="Prévisualisation des blocs Blockly"></iframe>

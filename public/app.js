@@ -336,7 +336,7 @@ function initBlockly() {
 
     workspace = Blockly.inject('blocklyDiv', {
         toolbox: typeof window.allowedBlockTypes !== 'undefined' && window.allowedBlockTypes !== null
-            ? savedToolbox(window.allowedBlockTypes)
+            ? savedToolbox(window.allowedBlockTypes, false)
             : TOOLBOX_XML,
         grid: { spacing: 22, length: 3, colour: 'rgba(255,255,255,0.08)', snap: true },
         zoom: { controls: true, wheel: true, startScale: 0.95, maxScale: 2, minScale: 0.4 },
@@ -350,9 +350,25 @@ function initBlockly() {
     generateCode();
 }
 
-function savedToolbox(allowedTypes) {
+function savedToolbox(allowedTypes, includeAllBlocks = false) {
     const source = new DOMParser().parseFromString(TOOLBOX_XML, 'text/xml');
     const saved = document.implementation.createDocument('', 'xml');
+    const isPreviewPopup = document.body.dataset.preview === 'true';
+
+    const buildCustomBlockNodes = (sourceCategory, doc) => {
+        const customTypes = sourceCategory.getAttribute('custom') === 'PROCEDURE'
+            ? ['procedures_defreturn', 'procedures_defnoreturn', 'procedures_callreturn', 'procedures_callnoreturn', 'procedures_ifreturn']
+            : sourceCategory.getAttribute('custom') === 'VARIABLE'
+                ? ['variables_get', 'variables_set']
+                : [];
+
+        return customTypes.map((type) => {
+            const block = doc.createElement('block');
+            block.setAttribute('type', type);
+            return block;
+        });
+    };
+
     if (document.body.dataset.savedOnly === 'true' || document.body.classList.contains('editor-page')) {
         const categoryColours = {
             Logic: '#4B8BBE', Loops: '#3776AB', Math: '#2E6CA4', Text: '#5B9BD5',
@@ -363,18 +379,9 @@ function savedToolbox(allowedTypes) {
             const blocks = [...sourceCategory.children].filter((block) =>
                 block.tagName === 'block' && allowedTypes.includes(block.getAttribute('type'))
             );
-            const customTypes = sourceCategory.getAttribute('custom') === 'PROCEDURE'
-                ? ['procedures_defreturn', 'procedures_defnoreturn', 'procedures_callreturn', 'procedures_callnoreturn', 'procedures_ifreturn']
-                : sourceCategory.getAttribute('custom') === 'VARIABLE'
-                    ? ['variables_get', 'variables_set']
-                    : [];
-            const matchingCustom = customTypes
-                .filter((type) => allowedTypes.includes(type))
-                .map((type) => {
-                    const block = saved.createElement('block');
-                    block.setAttribute('type', type);
-                    return block;
-                });
+            const matchingCustom = buildCustomBlockNodes(sourceCategory, saved).filter((block) =>
+                allowedTypes.includes(block.getAttribute('type'))
+            );
             if (!blocks.length && !matchingCustom.length) return;
             const category = saved.createElement('category');
             category.setAttribute('name', sourceCategory.getAttribute('name'));
@@ -382,8 +389,10 @@ function savedToolbox(allowedTypes) {
             [...blocks, ...matchingCustom].forEach((block) => category.appendChild(saved.importNode(block, true)));
             saved.documentElement.appendChild(category);
         });
+
         return saved.documentElement.outerHTML;
     }
+
     const category = saved.createElement('category');
     category.setAttribute('name', 'Saved');
     category.setAttribute('colour', '#3776AB');
@@ -580,6 +589,29 @@ function downloadPDF() {
 }
 
 /* ------------------------------ UI wiring ------------------------------- */
+function hasRobotCategoryInToolbox() {
+    const source = new DOMParser().parseFromString(
+        (window.allowedBlockTypes && Array.isArray(window.allowedBlockTypes) ? savedToolbox(window.allowedBlockTypes, false) : TOOLBOX_XML),
+        'text/xml'
+    );
+    return Array.from(source.documentElement.children).some((category) => category.tagName === 'category' && category.getAttribute('name') === 'Robot');
+}
+
+function syncRobotTabVisibility() {
+    const robotTab = document.querySelector('.tab[data-tab="robot"]');
+    if (!robotTab) return;
+
+    const isVisible = hasRobotCategoryInToolbox();
+    robotTab.hidden = !isVisible;
+
+    if (!isVisible && robotTab.classList.contains('active')) {
+        const pythonTab = document.querySelector('.tab[data-tab="python"]');
+        if (pythonTab) {
+            pythonTab.click();
+        }
+    }
+}
+
 function wireUI() {
     const accountMenuBtn = document.getElementById('accountMenuBtn');
     const accountMenu = document.getElementById('accountMenu');
@@ -604,8 +636,10 @@ function wireUI() {
 
     // Tabs
     const panelMap = { python: pythonEl, console: consoleEl, robot: document.getElementById('robotPane') };
+    syncRobotTabVisibility();
     document.querySelectorAll('.tab').forEach((tab) => {
         tab.addEventListener('click', () => {
+            if (tab.dataset.tab === 'robot' && tab.hidden) return;
             document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
             tab.classList.add('active');
             Object.values(panelMap).forEach((el) => { el.hidden = true; });

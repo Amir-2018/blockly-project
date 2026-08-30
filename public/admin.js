@@ -181,7 +181,6 @@ if (levelPage || savedPage) {
     const previewModal = document.getElementById('previewModal');
     const previewFrame = document.getElementById('previewFrame');
     function openPreview(id, name) {
-        document.getElementById('previewTitle').textContent = 'Blocs Blockly';
         previewFrame.src = '/admin/level/' + encodeURIComponent(id) + '/preview?saved=1';
         previewModal.hidden = false;
         previewModal.setAttribute('aria-hidden', 'false');

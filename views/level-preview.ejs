@@ -4,20 +4,99 @@
     <%- include('head', { title: 'Blocs Blockly — ' + level.nom }) %>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
-        html, body { height: 100%; margin: 0; overflow: hidden; }
-        body { background: #FFFFFF; }
+        html, body { height: 100%; margin: 0; }
+        body {
+            background: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
         #title, #pythonCode { display: none; }
         .preview-toolbar { height: 54px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: #FFFFFF; color: #111827; border-bottom: 1px solid #E5E7EB; }
         .preview-toolbar strong { font-family: Poppins, sans-serif; }
-        #saveBlocks { display: none; border: 0; border-radius: 8px; padding: 9px 14px; background: #51C1E5; color: #FFFFFF; font-weight: 700; cursor: pointer; }
+        .preview-toolbar-actions { display: flex; align-items: center; gap: 10px; }
+        .rename-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .rename-modal[hidden] { display: none; }
+        .rename-modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.35); }
+        .rename-modal-card {
+            position: relative; z-index: 1; width: min(420px, calc(100vw - 24px));
+            background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; padding: 20px; box-shadow: 0 20px 50px rgba(15, 23, 42, 0.16);
+        }
+        .rename-modal-header { margin-bottom: 12px; font-size: 1.1rem; font-weight: 700; color: #0F172A; }
+        .rename-modal-label { display: flex; flex-direction: column; gap: 8px; font-weight: 600; color: #0F172A; }
+        .rename-modal-label input { padding: 10px 12px; border: 1px solid #D1D5DB; border-radius: 10px; font-size: 1rem; }
+        .rename-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+        .rename-modal-actions button, #renameLevel, #editBlocks, #saveBlocks { border: 0; border-radius: 8px; padding: 9px 14px; font-weight: 700; cursor: pointer; }
+        .rename-modal-actions .cancel-rename { background: #F3F4F6; color: #0F172A; }
+        .rename-modal-actions .confirm-rename { background: #51C1E5; color: #FFFFFF; }
+        #renameLevel, #editBlocks { background: #E5F2FF; color: #0F172A; }
+        #saveBlocks { display: none; background: #51C1E5; color: #FFFFFF; }
         #saveBlocks.visible { display: inline-flex; align-items: center; gap: 8px; }
-        #blocklyDiv { width: 100%; height: calc(100% - 54px); }
+        .preview-content {
+            display: flex;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .block-manager {
+            display: none;
+            width: 320px;
+            border-right: 1px solid #E5E7EB;
+            background: #F8FAFC;
+            padding: 12px 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .block-manager.visible { display: block; }
+        .block-manager-tabs {
+            display: none;
+        }
+        .block-manager-category { border: 1px solid #E5E7EB; background: #FFFFFF; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+        .block-manager-category-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; background: #EEF4FF; font-weight: 700; color: #0F172A; }
+        .block-manager-category-head span { display: inline-flex; align-items: center; }
+        .block-manager-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; padding: 10px 12px 12px; }
+        .block-manager-row { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; background: #F8FAFC; }
+        .block-manager-row input, .block-manager-category-head input { accent-color: #51C1E5; }
+        .block-manager-category-head input { margin: 0; }
+        .block-manager-category-head label {
+            display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        .block-manager-global-toggle { margin-bottom: 12px; }
+        #blocklyDiv { width: 100%; height: 100%; min-height: 220px; flex: 1 1 auto; }
     </style>
 </head>
 <body class="editor-page" data-preview="true" data-saved-only="<%= savedOnly ? 'true' : 'false' %>">
     <h1 id="title" aria-hidden="true"></h1>
-    <header class="preview-toolbar"><strong>Blocs du niveau : <%= level.nom %></strong><button id="saveBlocks" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Enregistrer</button></header>
-    <div id="blocklyDiv"></div>
+    <header class="preview-toolbar">
+        <div>
+            <strong id="levelPreviewTitle"><%= level.nom %></strong>
+        </div>
+        <div class="preview-toolbar-actions">
+            <button id="renameLevel" type="button"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Renommer</button>
+            <button id="editBlocks" type="button"><i class="fa-solid fa-cubes" aria-hidden="true"></i> Modifier</button>
+            <button id="saveBlocks" type="button"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Enregistrer</button>
+        </div>
+    </header>
+    <div id="renameModal" class="rename-modal" hidden>
+        <div class="rename-modal-backdrop" data-rename-close></div>
+        <div class="rename-modal-card" role="dialog" aria-modal="true" aria-labelledby="renameModalTitle">
+            <div class="rename-modal-header" id="renameModalTitle">Renommer le niveau</div>
+            <label class="rename-modal-label">
+                Nom du niveau
+                <input id="levelNameInput" type="text" value="<%= level.nom %>" aria-label="Nouveau nom du niveau" />
+            </label>
+            <div class="rename-modal-actions">
+                <button id="cancelRename" class="cancel-rename" type="button">Annuler</button>
+                <button id="confirmRename" class="confirm-rename" type="button">OK</button>
+            </div>
+        </div>
+    </div>
+    <div class="preview-content">
+        <aside id="blockManager" class="block-manager" aria-live="polite">
+            <div id="blockManagerContent"></div>
+        </aside>
+        <div id="blocklyDiv"></div>
+    </div>
     <pre id="pythonCode"><code></code></pre>
     <script src="https://unpkg.com/blockly@9.2.0/blockly_compressed.js"></script>
     <script src="https://unpkg.com/blockly@9.2.0/blocks_compressed.js"></script>
@@ -29,18 +108,315 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedBlocks = <%- JSON.stringify(level.blocks || null) %>;
             const saveButton = document.getElementById('saveBlocks');
-            const savedTypes = new Set();
+            const editButton = document.getElementById('editBlocks');
+            const renameButton = document.getElementById('renameLevel');
+            const renameModal = document.getElementById('renameModal');
+            const renameInput = document.getElementById('levelNameInput');
+            const confirmRename = document.getElementById('confirmRename');
+            const cancelRename = document.getElementById('cancelRename');
+            const title = document.getElementById('levelPreviewTitle');
+            const blockManager = document.getElementById('blockManager');
+            const blockManagerContent = document.getElementById('blockManagerContent');
+            const savedTypes = new Set(Array.isArray(window.allowedBlockTypes) ? window.allowedBlockTypes : []);
+            let editMode = false;
+            let suppressWorkspaceSync = false;
+
+            const blockLabel = (type) => {
+                const labels = {
+                    controls_if: 'If',
+                    controls_repeat_ext: 'Répéter',
+                    controls_repeat: 'Répéter',
+                    controls_whileUntil: 'Tant que',
+                    controls_for: 'Pour',
+                    math_number: 'Nombre',
+                    math_arithmetic: 'Opération mathématique',
+                    text: 'Texte',
+                    text_print: 'Afficher',
+                    robot_forward: 'Avancer',
+                    robot_backward: 'Reculer',
+                    robot_turn_left: 'Pivoter à gauche',
+                    robot_turn_right: 'Pivoter à droite',
+                    robot_pen: 'Couleur du chemin',
+                    robot_repeat_square: 'Dessiner un carré',
+                    lists_create_with: 'Créer une liste',
+                    dict_create_empty: 'Dictionnaire vide',
+                    dict_create_pairs: 'Dictionnaire',
+                    dict_get: 'Valeur du dictionnaire',
+                    dict_set: 'Définir dans le dictionnaire',
+                    set_create: 'Créer un ensemble',
+                    set_add: 'Ajouter au set',
+                    tuple_create: 'Tuple'
+                };
+                return labels[type] || type.replace(/_/g, ' ');
+            };
+
+            const syncParentCard = (types) => {
+                if (!window.parent || !window.parent.document) return;
+                const card = window.parent.document.querySelector('.level-card[data-id="<%= level.id %>"]');
+                if (!card) return;
+
+                const listMarkup = [...new Set(types)].map((type) => `
+                    <span class="saved-block"><i class="fa-solid fa-cube" aria-hidden="true"></i>${blockLabel(type)}</span>
+                `).join('');
+
+                const existingList = card.querySelector('.saved-block-list');
+                const existingEmpty = card.querySelector('.level-empty');
+
+                if (existingList) {
+                    existingList.innerHTML = listMarkup;
+                    if (!listMarkup) existingList.innerHTML = '';
+                } else if (existingEmpty) {
+                    existingEmpty.remove();
+                    const list = document.createElement('div');
+                    list.className = 'saved-block-list';
+                    list.innerHTML = listMarkup;
+                    const actions = card.querySelector('.level-card-actions');
+                    if (actions) card.insertBefore(list, actions);
+                } else {
+                    const list = document.createElement('div');
+                    list.className = 'saved-block-list';
+                    list.innerHTML = listMarkup;
+                    const actions = card.querySelector('.level-card-actions');
+                    if (actions) card.insertBefore(list, actions);
+                }
+
+                if (!listMarkup && !card.querySelector('.level-empty')) {
+                    const empty = document.createElement('p');
+                    empty.className = 'level-empty';
+                    empty.textContent = 'Aucun bloc enregistré.';
+                    const actions = card.querySelector('.level-card-actions');
+                    if (actions) card.insertBefore(empty, actions);
+                }
+            };
+
+            const getToolboxCatalog = () => {
+                const categories = [];
+                const source = new DOMParser().parseFromString(TOOLBOX_XML, 'text/xml');
+
+                Array.from(source.documentElement.children).forEach((sourceCategory) => {
+                    if (sourceCategory.tagName !== 'category') return;
+                    const blockTypes = [...sourceCategory.children]
+                        .filter((node) => node.tagName === 'block')
+                        .map((node) => node.getAttribute('type'))
+                        .filter(Boolean);
+                    const customTypes = sourceCategory.getAttribute('custom') === 'PROCEDURE'
+                        ? ['procedures_defreturn', 'procedures_defnoreturn', 'procedures_callreturn', 'procedures_callnoreturn', 'procedures_ifreturn']
+                        : sourceCategory.getAttribute('custom') === 'VARIABLE'
+                            ? ['variables_get', 'variables_set']
+                            : [];
+
+                    categories.push({
+                        name: sourceCategory.getAttribute('name'),
+                        types: [...new Set([...blockTypes, ...customTypes].filter(Boolean))]
+                    });
+                });
+
+                return categories;
+            };
+
+            const renderBlockManager = () => {
+                const catalog = getToolboxCatalog();
+                const selected = new Set(savedTypes);
+                const allVisibleTypes = catalog.flatMap((category) => category.types);
+                const allSelected = allVisibleTypes.length > 0 && allVisibleTypes.every((type) => selected.has(type));
+
+                const applyBulkSelection = (types, shouldSelect) => {
+                    types.forEach((type) => {
+                        if (shouldSelect) {
+                            savedTypes.add(type);
+                        } else {
+                            savedTypes.delete(type);
+                        }
+                    });
+                };
+
+                blockManagerContent.innerHTML = `
+                 
+                    ${catalog.map((category) => {
+                        const categorySelected = category.types.length > 0 && category.types.every((type) => selected.has(type));
+                        const items = category.types.map((type) => {
+                            const alreadySelected = selected.has(type);
+                            return `
+                                <label class="block-manager-row">
+                                    <input type="checkbox" data-block-type="${type}" ${alreadySelected ? 'checked' : ''} />
+                                    <span>${blockLabel(type)}</span>
+                                </label>
+                            `;
+                        }).join('');
+
+                        return `
+                            <div class="block-manager-category">
+                                <div class="block-manager-category-head">
+                                    <label>
+                                        <input type="checkbox" data-category="${category.name}" ${categorySelected ? 'checked' : ''} />
+                                        <span>${category.name}</span>
+                                    </label>
+                                </div>
+                                <div class="block-manager-items">${items}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
+
+                blockManagerContent.querySelectorAll('[data-block-type]').forEach((checkbox) => {
+                    checkbox.addEventListener('change', (event) => {
+                        const type = event.target.dataset.blockType;
+                        if (event.target.checked) {
+                            savedTypes.add(type);
+                        } else {
+                            savedTypes.delete(type);
+                        }
+                        window.allowedBlockTypes = [...savedTypes];
+                        refreshToolbox(true, true);
+                        renderBlockManager();
+                        saveButton.classList.add('visible');
+                    });
+                });
+
+                blockManagerContent.querySelectorAll('[data-toggle-all]').forEach((checkbox) => {
+                    checkbox.addEventListener('change', (event) => {
+                        const shouldSelect = event.target.checked;
+                        suppressWorkspaceSync = true;
+                        applyBulkSelection(allVisibleTypes, shouldSelect);
+                        window.allowedBlockTypes = [...savedTypes];
+                        refreshToolbox(true, true);
+                        renderBlockManager();
+                        saveButton.classList.add('visible');
+                        suppressWorkspaceSync = false;
+                    });
+                });
+
+                blockManagerContent.querySelectorAll('[data-category]').forEach((checkbox) => {
+                    checkbox.addEventListener('change', (event) => {
+                        const categoryName = event.target.dataset.category;
+                        const category = catalog.find((item) => item.name === categoryName);
+                        if (!category) return;
+
+                        const shouldSelect = event.target.checked;
+                        suppressWorkspaceSync = true;
+                        applyBulkSelection(category.types, shouldSelect);
+                        window.allowedBlockTypes = [...savedTypes];
+                        refreshToolbox(true, true);
+                        renderBlockManager();
+                        saveButton.classList.add('visible');
+                        suppressWorkspaceSync = false;
+                    });
+                });
+            };
+
+            const refreshToolbox = (editing, forceFlyoutRefresh = false) => {
+                if (!window.levelWorkspace) return;
+
+                const flyout = typeof window.levelWorkspace.getFlyout === 'function'
+                    ? window.levelWorkspace.getFlyout()
+                    : null;
+                const wasFlyoutVisible = !!(flyout && typeof flyout.isVisible === 'function' && flyout.isVisible());
+
+                window.levelWorkspace.updateToolbox(window.allowedBlockTypes !== null
+                    ? savedToolbox(window.allowedBlockTypes, editing)
+                    : TOOLBOX_XML);
+
+                if (forceFlyoutRefresh && wasFlyoutVisible && flyout && typeof flyout.hide === 'function' && typeof flyout.show === 'function') {
+                    flyout.hide();
+                    setTimeout(() => {
+                        const refreshedFlyout = typeof window.levelWorkspace.getFlyout === 'function'
+                            ? window.levelWorkspace.getFlyout()
+                            : null;
+                        if (refreshedFlyout && typeof refreshedFlyout.show === 'function') {
+                            refreshedFlyout.show();
+                        }
+                    }, 0);
+                }
+            };
+
+            const enableEditMode = () => {
+                editMode = true;
+                editButton.disabled = true;
+                blockManager.classList.add('visible');
+                renderBlockManager();
+                refreshToolbox(true);
+                saveButton.classList.add('visible');
+            };
+
+            const updateParentLevelName = (newName) => {
+                if (!window.parent || !window.parent.document) return;
+                const card = window.parent.document.querySelector('.level-card[data-id="<%= level.id %>"] .level-name');
+                if (card) card.textContent = newName;
+            };
+
+            const openRenameModal = () => {
+                renameModal.hidden = false;
+                renameInput.value = title.textContent.trim();
+                requestAnimationFrame(() => {
+                    renameInput.focus();
+                    renameInput.select();
+                });
+            };
+
+            const closeRenameModal = () => {
+                renameModal.hidden = true;
+                renameInput.value = title.textContent.trim();
+            };
+
+            renameButton.addEventListener('click', openRenameModal);
+            document.querySelector('[data-rename-close]').addEventListener('click', closeRenameModal);
+            cancelRename.addEventListener('click', closeRenameModal);
+
+            confirmRename.addEventListener('click', () => {
+                const newName = renameInput.value.trim();
+                if (!newName) return;
+                fetch('/admin/level', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: new URLSearchParams({ action: 'update', id: '<%= level.id %>', nom: newName })
+                }).then((response) => {
+                    if (!response.ok) throw new Error('rename failed');
+                    title.textContent = newName;
+                    renameModal.hidden = true;
+                    updateParentLevelName(newName);
+                }).catch(() => {
+                    renameInput.value = title.textContent.trim();
+                });
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !renameModal.hidden) closeRenameModal();
+            });
+
             if (savedBlocks && window.levelWorkspace) Blockly.serialization.workspaces.load(savedBlocks, window.levelWorkspace);
+
             window.levelWorkspace.addChangeListener((event) => {
-                if (!event.isUiEvent) saveButton.classList.add('visible');
+                if (!editMode || event.isUiEvent || suppressWorkspaceSync) return;
+                saveButton.classList.add('visible');
                 savedTypes.clear();
                 window.levelWorkspace.getAllBlocks(false).forEach((block) => savedTypes.add(block.type));
             });
+
+            editButton.addEventListener('click', () => {
+                enableEditMode();
+                const workspaceBlocks = window.levelWorkspace.getAllBlocks(false);
+                savedTypes.clear();
+                (Array.isArray(window.allowedBlockTypes) ? window.allowedBlockTypes : []).forEach((type) => savedTypes.add(type));
+                workspaceBlocks.forEach((block) => savedTypes.add(block.type));
+            });
+
             saveButton.addEventListener('click', () => fetch('/admin/level/<%= encodeURIComponent(level.id) %>/saved-blocks', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({ types: [...savedTypes] })
-            }).then(() => { saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Enregistré'; saveButton.classList.remove('visible'); }));
+            }).then(() => {
+                const types = [...savedTypes];
+                syncParentCard(types);
+                window.allowedBlockTypes = types;
+                refreshToolbox(false);
+                saveButton.innerHTML = '<i class="fa-solid fa-check"></i> Enregistré';
+                saveButton.classList.remove('visible');
+                editButton.disabled = false;
+                editMode = false;
+                setTimeout(() => {
+                    saveButton.innerHTML = '<i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Enregistrer';
+                }, 1200);
+            }));
         });
     </script>
 </body>

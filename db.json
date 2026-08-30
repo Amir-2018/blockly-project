@@ -18,7 +18,7 @@
   "classes": [
     {
       "id": "6A",
-      "nom": "6ème A",
+      "nom": "6ème A434",
       "eleves": [
         {
           "id": "e1",
@@ -33,18 +33,6 @@
           "prenom": "Léa",
           "username": "lea.martin",
           "key": "KEY-6A-6ALEA002"
-        },
-        {
-          "id": "smtet745r",
-          "nom": "mm",
-          "prenom": "mm",
-          "key": "KEY-6A-573BE1AC"
-        },
-        {
-          "id": "smteu1znw",
-          "nom": "ss",
-          "prenom": "ss",
-          "key": "KEY-6A-03E0BE5C"
         }
       ],
       "blocks": {
@@ -61,9 +49,15 @@
         }
       },
       "savedBlocks": [
-        "math_arithmetic",
+        "procedures_defreturn",
+        "controls_repeat_ext",
         "controls_if",
-        "controls_repeat"
+        "logic_compare",
+        "logic_operation",
+        "logic_negate",
+        "controls_repeat",
+        "math_arithmetic",
+        "text"
       ]
     },
     {
@@ -82,7 +76,7 @@
           "nom": "aa",
           "prenom": "aa",
           "username": "aa.aa",
-          "key": "KEY-5B-56165EA7"
+          "key": "KEY-5B-FF176EF9"
         }
       ],
       "blocks": {}
@@ -90,6 +84,11 @@
     {
       "id": "4C",
       "nom": "4ème C",
+      "eleves": []
+    },
+    {
+      "id": "lvl-mtf0gejc",
+      "nom": "eee",
       "eleves": []
     }
   ]
