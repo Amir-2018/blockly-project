@@ -334,17 +334,30 @@ let workspace;
 function initBlockly() {
     registerCustomBlocks();
 
+    const isSmallScreen = window.matchMedia('(max-width: 860px)').matches;
+
     workspace = Blockly.inject('blocklyDiv', {
         toolbox: typeof window.allowedBlockTypes !== 'undefined' && window.allowedBlockTypes !== null
             ? savedToolbox(window.allowedBlockTypes, false)
             : TOOLBOX_XML,
         grid: { spacing: 22, length: 3, colour: 'rgba(255,255,255,0.08)', snap: true },
-        zoom: { controls: true, wheel: true, startScale: 0.95, maxScale: 2, minScale: 0.4 },
+        zoom: {
+            controls: true,
+            wheel: true,
+            startScale: isSmallScreen ? 0.16 : 0.95,
+            maxScale: isSmallScreen ? 1.0 : 2,
+            minScale: isSmallScreen ? 0.12 : 0.4,
+            pinch: true
+        },
         trashcan: true,
         renderer: 'zelos',
         sounds: false,
         theme: blocklyTheme()
     });
+
+    if (isSmallScreen) {
+        workspace.zoomToFit();
+    }
 
     workspace.addChangeListener(onWorkspaceChange);
     generateCode();
@@ -615,6 +628,27 @@ function syncRobotTabVisibility() {
 function wireUI() {
     const accountMenuBtn = document.getElementById('accountMenuBtn');
     const accountMenu = document.getElementById('accountMenu');
+    const toolboxToggleBtn = document.getElementById('toolboxToggleBtn');
+    const toolbox = document.querySelector('.blocklyToolboxDiv');
+    const isSmallScreen = window.matchMedia('(max-width: 860px)').matches;
+
+    function toggleToolboxMenu() {
+        if (!toolbox) return;
+        const shouldHide = !toolbox.classList.contains('is-hidden');
+        toolbox.classList.toggle('is-hidden', shouldHide);
+        toolbox.style.display = shouldHide ? 'none' : 'block';
+        toolboxToggleBtn?.setAttribute('aria-pressed', String(!shouldHide));
+        if (workspace) {
+            workspace.resize();
+            setTimeout(() => workspace.resize(), 50);
+        }
+    }
+
+    if (toolboxToggleBtn) {
+        toolboxToggleBtn.style.display = isSmallScreen ? 'inline-flex' : 'none';
+        toolboxToggleBtn.addEventListener('click', toggleToolboxMenu);
+    }
+
     accountMenuBtn.addEventListener('click', (event) => {
         event.stopPropagation();
         accountMenu.hidden = !accountMenu.hidden;

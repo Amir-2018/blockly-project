@@ -33,6 +33,13 @@ html, body {
     overflow: hidden;
 }
 
+html.editor-page,
+body.editor-page {
+    height: 100%;
+    overflow: auto;
+    overflow-x: hidden;
+}
+
 /* ---------------- Header ---------------- */
 .app-header {
     position: relative;
@@ -289,6 +296,111 @@ html, body {
     }
     .resizer { display: none; }
     .code-pane { flex: 1 1 40%; }
+}
+
+@media (max-width: 860px) {
+    html.editor-page,
+    body.editor-page {
+        overflow: auto;
+        overflow-x: hidden;
+    }
+
+    body.editor-page .app-header {
+        padding: 12px 14px;
+        align-items: flex-start;
+    }
+
+    body.editor-page .top-nav {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    body.editor-page .blockly-menu-toggle {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 25;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid #D1D5DB;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.96);
+        color: #111827;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(17, 24, 39, 0.12);
+        cursor: pointer;
+    }
+
+    body.editor-page .workspace-area {
+        position: relative;
+        inset: auto;
+        display: flex;
+        height: calc(100vh - 124px);
+        min-height: calc(100vh - 124px);
+        padding: 12px;
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    body.editor-page .blockly-pane {
+        flex: 0 0 38vh;
+        min-height: 38vh;
+        height: 38vh;
+    }
+
+    body.editor-page #blocklyDiv {
+        min-height: 220px;
+        height: 100%;
+    }
+
+    body.editor-page .code-pane {
+        flex: 1 1 30vh;
+        min-height: 220px;
+        width: 100%;
+    }
+
+    body.editor-page .code-output,
+    body.editor-page .console-output {
+        max-height: 220px;
+    }
+
+    body.editor-page .robot-bar {
+        align-items: flex-start;
+    }
+
+    body.editor-page .robot-hint {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    body.editor-page .workspace-area {
+        height: calc(100dvh - 124px);
+        min-height: calc(100dvh - 124px);
+        padding: 10px;
+    }
+
+    body.editor-page .blockly-pane {
+        min-height: 42vh;
+        height: 42vh;
+    }
+
+    body.editor-page .nav-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+    }
+
+    body.editor-page .animated-title {
+        font-size: 1.5rem;
+    }
+
+    body.editor-page .subtitle {
+        font-size: 0.75rem;
+    }
 }
 
 /* Override Blockly's default font to match the theme */
@@ -1478,11 +1590,21 @@ body.editor-page .account-menu-list a {
 body.editor-page .account-menu-list a:hover { background: #FFF4F6; }
 body.editor-page .workspace-area {
     background: #FFFFFF;
+    height: calc(100vh - 96px);
+    min-height: calc(100vh - 96px);
 }
 body.editor-page .blockly-pane {
+    position: relative;
     background: #FFFFFF;
     border-color: #E5E7EB;
     box-shadow: 0 12px 28px rgba(17, 24, 39, 0.08);
+    height: 100%;
+}
+body.editor-page .blockly-menu-toggle {
+    display: none;
+}
+body.editor-page .blocklyToolboxDiv.is-hidden {
+    display: none !important;
 }
 body.editor-page .resizer {
     background: #D1D5DB;

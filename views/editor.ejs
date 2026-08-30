@@ -16,14 +16,13 @@
             </div>
         </div>
         <nav class="top-nav">
-          
             <button class="nav-btn" id="runBtn" title="Run the generated Python">
                 <span class="play-icon">&#9654;</span> Run
             </button>
             <button class="nav-btn ghost" id="genBtn" title="Refresh generated code">Generate</button>
             <button class="nav-btn ghost" id="clearBtn" title="Clear the workspace">Clear</button>
             <button class="nav-btn ghost" id="sampleBtn" title="Load a sample program">Sample</button>
-          <div class="account-menu">
+            <div class="account-menu">
                 <button class="nav-btn ghost account-menu-btn" id="accountMenuBtn" type="button" title="Menu du compte" aria-label="Menu du compte" aria-expanded="false" aria-controls="accountMenu">
                     <i class="fa-solid fa-bars" aria-hidden="true"></i>
                 </button>
@@ -36,6 +35,10 @@
 
     <main class="workspace-area">
         <section class="blockly-pane" id="blocklyPane">
+            <button class="blockly-menu-toggle" id="toolboxToggleBtn" type="button" aria-label="Afficher/Masquer le menu des blocs" aria-pressed="false" title="Menu des blocs">
+                <i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>
+                <span>Menu</span>
+            </button>
             <div id="blocklyDiv"></div>
         </section>
 
