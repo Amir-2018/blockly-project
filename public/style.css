@@ -260,6 +260,204 @@ body.editor-page {
 .console-output { color: var(--accent); }
 .console-output .err { color: var(--bad); }
 
+body.editor-page .debug-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.editor-page .debug-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+}
+
+body.editor-page .debug-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.56);
+    backdrop-filter: blur(3px);
+}
+
+body.editor-page .debug-panel {
+    position: relative;
+    z-index: 1;
+    width: min(1100px, 92vw);
+    max-height: 82vh;
+    margin: 8vh auto 0;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 18px;
+    box-shadow: 0 28px 60px rgba(15, 23, 42, 0.22);
+    padding: 20px 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+body.editor-page .debug-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 10px;
+    background: #F3F4F6;
+    color: #111827;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+body.editor-page .debug-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-right: 42px;
+}
+
+body.editor-page .debug-toolbar .mini,
+body.editor-page .debug-toolbar .cta-sm {
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+body.editor-page .debug-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 16px;
+    min-height: 0;
+    flex: 1;
+}
+
+body.editor-page .debug-column {
+    background: #F8FAFC;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    padding: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+body.editor-page .debug-column h3 {
+    margin: 0 0 12px;
+    color: #111827;
+    font-size: 1rem;
+}
+
+body.editor-page .debug-code-lines,
+body.editor-page .debug-state {
+    overflow: auto;
+    min-height: 0;
+    flex: 1;
+}
+
+body.editor-page .debug-code-lines {
+    background: #0F172A;
+    border-radius: 12px;
+    padding: 8px 0;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body.editor-page .debug-code-line {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 10px;
+    padding: 7px 12px;
+    color: #DBEAFE;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+body.editor-page .debug-code-line.active {
+    background: rgba(96, 165, 250, 0.18);
+    color: #E0F2FE;
+    box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.26);
+}
+
+body.editor-page .debug-line-no {
+    color: #93C5FD;
+    text-align: right;
+    user-select: none;
+}
+
+body.editor-page .debug-state {
+    display: grid;
+    gap: 12px;
+    align-content: start;
+}
+
+body.editor-page .debug-state-box {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+body.editor-page .debug-state-box h4 {
+    margin: 0 0 10px;
+    color: #1F2937;
+    font-size: 0.85rem;
+}
+
+body.editor-page .debug-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.editor-page .debug-list span,
+body.editor-page .debug-var-node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #E0F5FB;
+    border: 1px solid #A5E3F2;
+    color: #0F172A;
+    font-weight: 700;
+}
+
+body.editor-page .debug-var-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+body.editor-page .debug-message {
+    color: #475569;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+    body.editor-page .debug-panel {
+        width: min(94vw, 540px);
+        max-height: 88vh;
+        margin-top: 6vh;
+        padding: 18px 14px 14px;
+    }
+
+    body.editor-page .debug-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.editor-page .debug-toolbar {
+        justify-content: space-between;
+        padding-right: 0;
+    }
+}
+
 /* simple python syntax highlight tokens */
 .tok-kw { color: #c792ea; font-weight: 500; }
 .tok-str { color: #c3e88d; }
@@ -432,11 +630,89 @@ body.editor-page {
     color: var(--text-dim);
     font-size: 0.8rem;
 }
+.robot-game-hud {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 8px 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--panel-border);
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(244, 114, 182, 0.08));
+    color: var(--text-main);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+.robot-challenge-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 12px 10px;
+    border-bottom: 1px solid var(--panel-border);
+    background: rgba(15, 23, 42, 0.02);
+    color: var(--text-main);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.robot-challenge-bar input {
+    width: 90px;
+    padding: 7px 8px;
+    border: 1px solid #CBD5E1;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+.robot-lose-popup,
+.robot-win-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(3px);
+}
+.robot-lose-card,
+.robot-win-card {
+    width: min(360px, 88vw);
+    background: #ffffff;
+    border: 2px solid #111827;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+    padding: 22px 20px 18px;
+    text-align: center;
+}
+.robot-lose-card h3,
+.robot-win-card h3 {
+    margin: 0 0 8px;
+    color: #111827;
+    font-size: 1.8rem;
+}
+.robot-lose-card p,
+.robot-win-card p {
+    margin: 0 0 16px;
+    color: #374151;
+    font-size: 0.95rem;
+}
+.robot-lose-card button,
+.robot-win-card button {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 10px 18px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.robot-win-card button {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
 #robotCanvas {
     flex: 1 1 auto;
     width: 100%;
     display: block;
-  
+    background: linear-gradient(180deg, #eef7ff 0%, #f8fafc 100%);
 }
 
 /* ============================ Landing page ============================ */

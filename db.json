@@ -6,7 +6,7 @@
       "prenom": "Claire",
       "username": "claire.martin",
       "key": "KEY-D0C6842D",
-      "loginSuccessCount": 3
+      "loginSuccessCount": 10
     },
     {
       "id": "tmterc5oy",
@@ -28,7 +28,7 @@
           "prenom": "Jean",
           "username": "jean.dupont",
           "key": "KEY-6A-6AJEAN01",
-          "loginSuccessCount": 0
+          "loginSuccessCount": 1
         },
         {
           "id": "e2",
@@ -36,7 +36,7 @@
           "prenom": "Léa",
           "username": "lea.martin",
           "key": "KEY-6A-6ALEA002",
-          "loginSuccessCount": 9
+          "loginSuccessCount": 13
         }
       ],
       "blocks": {
@@ -55,8 +55,6 @@
       "savedBlocks": [
         "procedures_defreturn",
         "controls_repeat_ext",
-        "controls_if",
-        "logic_compare",
         "logic_operation",
         "logic_negate",
         "controls_repeat",
@@ -91,10 +89,26 @@
         "set_create",
         "set_add",
         "tuple_create",
+        "controls_whileUntil",
+        "controls_for",
+        "controls_forEach",
+        "controls_flow_statements",
+        "variables_get",
+        "variables_set",
+        "controls_if",
+        "logic_compare",
         "robot_forward",
         "robot_backward",
+        "robot_jump",
         "robot_turn_left",
         "robot_turn_right",
+        "robot_zoom_in",
+        "robot_zoom_out",
+        "robot_sound_forward",
+        "robot_sound_backward",
+        "robot_sound_turn_left",
+        "robot_sound_turn_right",
+        "robot_sound_jump",
         "robot_pen",
         "robot_repeat_square"
       ]
@@ -125,7 +139,48 @@
     {
       "id": "4C",
       "nom": "4ème C",
-      "eleves": []
+      "eleves": [
+        {
+          "id": "smtfztke3",
+          "nom": "test",
+          "prenom": "test",
+          "username": "test.test",
+          "key": "KEY-4C-9B9DAEBB",
+          "loginSuccessCount": 1
+        },
+        {
+          "id": "smtfzz2v7",
+          "nom": "new",
+          "prenom": "new",
+          "username": "new.new",
+          "key": "KEY-4C-6909FCD3",
+          "loginSuccessCount": 1
+        }
+      ],
+      "savedBlocks": [
+        "controls_if",
+        "logic_boolean",
+        "controls_for",
+        "robot_forward",
+        "robot_backward",
+        "robot_jump",
+        "robot_turn_left",
+        "robot_turn_right",
+        "robot_zoom_in",
+        "robot_zoom_out",
+        "robot_sound_forward",
+        "robot_sound_backward",
+        "robot_sound_turn_left",
+        "robot_sound_turn_right",
+        "robot_sound_jump",
+        "robot_pen",
+        "robot_repeat_square",
+        "logic_compare",
+        "logic_operation",
+        "logic_negate",
+        "logic_null",
+        "logic_ternary"
+      ]
     },
     {
       "id": "lvl-mtf0gejc",

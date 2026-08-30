@@ -19,6 +19,10 @@
             <button class="nav-btn" id="runBtn" title="Run the generated Python">
                 <span class="play-icon">&#9654;</span> Run
             </button>
+            <button class="nav-btn ghost debug-btn" id="debugBtn" type="button" title="Voir le programme pas à pas">
+                <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                <span>Voir</span>
+            </button>
             <button class="nav-btn ghost" id="genBtn" title="Refresh generated code">Generate</button>
             <button class="nav-btn ghost" id="clearBtn" title="Clear the workspace">Clear</button>
             <button class="nav-btn ghost" id="sampleBtn" title="Load a sample program">Sample</button>
@@ -44,6 +48,28 @@
 
         <div class="resizer" id="resizer" title="Drag to resize"></div>
 
+        <div class="debug-modal" id="debugModal" hidden>
+            <div class="debug-backdrop" data-debug-close></div>
+            <div class="debug-panel" role="dialog" aria-modal="true" aria-labelledby="debugTitle">
+                <button class="debug-close" type="button" data-debug-close aria-label="Fermer la visualisation">&times;</button>
+                <h2 id="debugTitle">Visualisation du programme</h2>
+                <div class="debug-toolbar">
+                    <button class="mini" id="debugPrevBtn" type="button">Précédent</button>
+                    <button class="cta cta-sm" id="debugNextBtn" type="button">Étape suivante</button>
+                </div>
+                <div class="debug-grid">
+                    <section class="debug-column debug-code-column">
+                        <h3>Code Python</h3>
+                        <div id="debugCodeLines" class="debug-code-lines"></div>
+                    </section>
+                    <section class="debug-column debug-state-column">
+                        <h3>Programme</h3>
+                        <div id="debugState" class="debug-state"></div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
         <aside class="code-pane">
             <div class="code-tabs">
                 <button class="tab active" data-tab="python">Python</button>
@@ -65,6 +91,33 @@
                     <button class="nav-btn" id="robotRun"><span class="play-icon">&#9654;</span> Exécuter le robot</button>
                     <button class="nav-btn ghost" id="robotReset">&#8635; Réinitialiser</button>
                     <span class="robot-hint">Empile des blocs « Robot » puis exécute</span>
+                </div>
+                <div class="robot-game-hud">
+                    <span id="robotStatus">Parcours en cours</span>
+                    <span id="robotTime">Temps: 0.0 s</span>
+                    <span id="robotBest">Top score: —</span>
+                    <span id="robotGoal">Objectif: aller au drapeau</span>
+                </div>
+                <div class="robot-challenge-bar">
+                    <label for="challengeTimeInput">Temps du défi (s):</label>
+                    <input id="challengeTimeInput" type="number" min="5" max="120" step="1" value="20" />
+                    <button id="applyChallengeBtn" class="nav-btn ghost" type="button">Valider</button>
+                </div>
+                <div class="robot-mini-game-switch">
+                    <button class="nav-btn ghost active" id="classicModeBtn" type="button">Parcours</button>
+                    <button class="nav-btn ghost" id="pokemonModeBtn" type="button">Pokémon</button>
+                </div>
+                <div class="robot-pokemon-panel" id="pokemonGamePanel" hidden>
+                    <div class="robot-pokemon-hud">
+                        <span id="pokemonScore">Pokéballs: 0 / 0</span>
+                        <span id="pokemonTimer">Temps: 30 s</span>
+                    </div>
+                    <div class="robot-challenge-bar">
+                        <label for="pokemonChallengeTimeInput">Temps du défi Pokémon (s):</label>
+                        <input id="pokemonChallengeTimeInput" type="number" min="5" max="180" step="1" value="30" />
+                        <button id="applyPokemonChallengeBtn" class="nav-btn ghost" type="button">Valider</button>
+                    </div>
+                    <button class="nav-btn" id="pokemonStartBtn" type="button">Lancer le défi Pokémon</button>
                 </div>
                 <canvas id="robotCanvas"></canvas>
             </div>

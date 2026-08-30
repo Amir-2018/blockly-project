@@ -106,8 +106,18 @@ const TOOLBOX_XML = `
     <block type="robot_backward">
       <value name="STEPS"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
     </block>
+    <block type="robot_jump">
+      <value name="STEPS"><shadow type="math_number"><field name="NUM">1</field></shadow></value>
+    </block>
     <block type="robot_turn_left"></block>
     <block type="robot_turn_right"></block>
+    <block type="robot_zoom_in"></block>
+    <block type="robot_zoom_out"></block>
+    <block type="robot_sound_forward"></block>
+    <block type="robot_sound_backward"></block>
+    <block type="robot_sound_turn_left"></block>
+    <block type="robot_sound_turn_right"></block>
+    <block type="robot_sound_jump"></block>
     <block type="robot_pen"></block>
     <block type="robot_repeat_square"></block>
   </category>
@@ -269,6 +279,23 @@ function registerCustomBlocks() {
         return `move_backward(${n})\n`;
     };
 
+    // sauter par-dessus les cases / obstacles
+    Blockly.Blocks['robot_jump'] = {
+        init() {
+            this.appendValueInput('STEPS').setCheck('Number').appendField('sauter de');
+            this.appendDummyInput().appendField('cases');
+            this.setInputsInline(true);
+            this.setPreviousStatement(true);
+            this.setNextStatement(true);
+            this.setColour("#3776AB");
+            this.setTooltip('Jump over blocks and move forward without stopping on obstacles');
+        }
+    };
+    Blockly.Python['robot_jump'] = (block) => {
+        const n = Blockly.Python.valueToCode(block, 'STEPS', Blockly.Python.ORDER_NONE) || '1';
+        return `jump(${n})\n`;
+    };
+
     // pivoter à gauche 90°
     Blockly.Blocks['robot_turn_left'] = {
         init() {
@@ -292,6 +319,48 @@ function registerCustomBlocks() {
         }
     };
     Blockly.Python['robot_turn_right'] = () => 'turn_right()\n';
+
+    // zoomer / dézoomer le chat
+    Blockly.Blocks['robot_zoom_in'] = {
+        init() {
+            this.appendDummyInput().appendField('zoomer le chat');
+            this.setPreviousStatement(true);
+            this.setNextStatement(true);
+            this.setColour('#8B5CF6');
+            this.setTooltip('Zoom in the cat');
+        }
+    };
+    Blockly.Python['robot_zoom_in'] = () => 'zoom_in()\n';
+
+    Blockly.Blocks['robot_zoom_out'] = {
+        init() {
+            this.appendDummyInput().appendField('dézoomer le chat');
+            this.setPreviousStatement(true);
+            this.setNextStatement(true);
+            this.setColour('#8B5CF6');
+            this.setTooltip('Zoom out the cat');
+        }
+    };
+    Blockly.Python['robot_zoom_out'] = () => 'zoom_out()\n';
+
+    // son d'avancer / reculer / tourner / sauter
+    const createMoveSoundBlock = (typeName, label) => {
+        Blockly.Blocks[typeName] = {
+            init() {
+                this.appendDummyInput().appendField(label);
+                this.setPreviousStatement(true);
+                this.setNextStatement(true);
+                this.setColour('#FFB703');
+                this.setTooltip('Play a movement sound');
+            }
+        };
+        Blockly.Python[typeName] = () => `${typeName}()\n`;
+    };
+    createMoveSoundBlock('robot_sound_forward', 'son avancer');
+    createMoveSoundBlock('robot_sound_backward', 'son reculer');
+    createMoveSoundBlock('robot_sound_turn_left', 'son tourner gauche');
+    createMoveSoundBlock('robot_sound_turn_right', 'son tourner droite');
+    createMoveSoundBlock('robot_sound_jump', 'son saut');
 
     // couleur du chemin
     Blockly.Blocks['robot_pen'] = {
@@ -631,6 +700,195 @@ function wireUI() {
     const toolboxToggleBtn = document.getElementById('toolboxToggleBtn');
     const toolbox = document.querySelector('.blocklyToolboxDiv');
     const isSmallScreen = window.matchMedia('(max-width: 860px)').matches;
+    const debugBtn = document.getElementById('debugBtn');
+    const debugModal = document.getElementById('debugModal');
+    const debugCodeLines = document.getElementById('debugCodeLines');
+    const debugState = document.getElementById('debugState');
+    const debugNextBtn = document.getElementById('debugNextBtn');
+    const debugPrevBtn = document.getElementById('debugPrevBtn');
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function normalizeValue(value) {
+        if (Array.isArray(value)) return value.map(normalizeValue);
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) return trimmed.slice(1, -1);
+            return trimmed;
+        }
+        return value;
+    }
+
+    function parseSimpleValue(raw, state) {
+        const expr = (raw || '').trim();
+        if (!expr) return '';
+        if (expr.startsWith('[') && expr.endsWith(']')) {
+            const inner = expr.slice(1, -1).trim();
+            if (!inner) return [];
+            const items = inner.split(',').map((part) => parseSimpleValue(part, state));
+            return items;
+        }
+        if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) return expr.slice(1, -1);
+        if (/^-?\d+(\.\d+)?$/.test(expr)) return Number(expr);
+        if (expr === 'True') return true;
+        if (expr === 'False') return false;
+        if (expr === 'None') return null;
+        if (Object.prototype.hasOwnProperty.call(state, expr)) return state[expr];
+        return expr;
+    }
+
+    function formatValue(value) {
+        if (Array.isArray(value)) return '[' + value.map((item) => formatValue(item)).join(', ') + ']';
+        if (typeof value === 'string') return '"' + value + '"';
+        if (value === null) return 'None';
+        if (typeof value === 'boolean') return value ? 'True' : 'False';
+        return String(value);
+    }
+
+    function prettyDisplayValue(value) {
+        if (Array.isArray(value)) return value.map((item) => prettyDisplayValue(item)).join(', ');
+        if (typeof value === 'string') return value;
+        if (value === null) return 'None';
+        if (typeof value === 'boolean') return value ? 'True' : 'False';
+        return String(value);
+    }
+
+    function renderStatePanel(state, message) {
+        const entries = Object.entries(state || {});
+        const defaultMessage = message || 'Le programme est prêt à être observé ligne par ligne.';
+        if (!entries.length) {
+            debugState.innerHTML = '<div class="debug-state-box"><div class="debug-message">' + escapeHtml(defaultMessage) + '</div></div>';
+            return;
+        }
+
+        const cards = entries.map(([key, value]) => {
+            if (Array.isArray(value)) {
+                const chips = value.map((item) => '<span>' + escapeHtml(prettyDisplayValue(item)) + '</span>').join('');
+                return '<div class="debug-state-box"><h4>' + escapeHtml(key) + '</h4><div class="debug-list">' + chips + '</div></div>';
+            }
+            return '<div class="debug-state-box"><h4>' + escapeHtml(key) + '</h4><div class="debug-var-list"><span class="debug-var-node"><strong>' + escapeHtml(prettyDisplayValue(value)) + '</strong></span></div></div>';
+        }).join('');
+
+        debugState.innerHTML = cards + '<div class="debug-state-box"><div class="debug-message">' + escapeHtml(defaultMessage) + '</div></div>';
+    }
+
+    function buildDebugPreview(code) {
+        const lines = code.split('\n');
+        const state = {};
+        const trace = [];
+
+        lines.forEach((rawLine, index) => {
+            const line = rawLine.trim();
+            if (!line || line.startsWith('#')) return;
+
+            if (/^print\s*\(.+\)$/.test(line)) {
+                const inner = line.match(/^print\s*\((.*)\)$/)[1].trim();
+                const value = parseSimpleValue(inner, state);
+                const snapshot = JSON.parse(JSON.stringify(state));
+                trace.push({
+                    lineIndex: index,
+                    line,
+                    message: 'Affiche la valeur ' + formatValue(value) + '.',
+                    state: snapshot,
+                    output: value
+                });
+                return;
+            }
+
+            const assignment = line.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);
+            if (assignment) {
+                const variableName = assignment[1];
+                const value = parseSimpleValue(assignment[2], state);
+                state[variableName] = value;
+                trace.push({
+                    lineIndex: index,
+                    line,
+                    message: 'La variable ' + variableName + ' reçoit ' + formatValue(value) + '.',
+                    state: JSON.parse(JSON.stringify(state))
+                });
+                return;
+            }
+
+            if (/^for\s+[A-Za-z_][A-Za-z0-9_]*\s+in\s+.+:$/.test(line)) {
+                const match = line.match(/^for\s+([A-Za-z_][A-Za-z0-9_]*)\s+in\s+(.+):$/);
+                const iterVar = match[1];
+                const source = parseSimpleValue(match[2], state);
+                trace.push({
+                    lineIndex: index,
+                    line,
+                    message: 'La boucle itère sur ' + formatValue(Array.isArray(source) ? source : [source]) + ' avec ' + iterVar + '.',
+                    state: JSON.parse(JSON.stringify(state))
+                });
+                return;
+            }
+
+            trace.push({
+                lineIndex: index,
+                line,
+                message: 'Exécution de la ligne : ' + line,
+                state: JSON.parse(JSON.stringify(state))
+            });
+        });
+
+        return { lines, trace, finalState: JSON.parse(JSON.stringify(state)) };
+    }
+
+    function openDebugModal() {
+        const code = currentPython();
+        const preview = buildDebugPreview(code || '# Le programme est vide.');
+        let index = 0;
+
+        const render = () => {
+            const step = preview.trace[index] || preview.trace[preview.trace.length - 1] || {
+                lineIndex: 0,
+                line: '',
+                message: 'Le programme est terminé.',
+                state: preview.finalState
+            };
+
+            debugCodeLines.innerHTML = preview.lines.map((line, lineIndex) => {
+                const active = lineIndex === step.lineIndex ? 'active' : '';
+                const display = escapeHtml(line || '');
+                return '<div class="debug-code-line ' + active + '"><span class="debug-line-no">' + (lineIndex + 1) + '</span><span>' + display + '</span></div>';
+            }).join('');
+
+            renderStatePanel(step.state || preview.finalState, step.message || 'Le programme est prêt.');
+            debugPrevBtn.disabled = index === 0;
+            debugNextBtn.textContent = index >= preview.trace.length - 1 ? 'Fin du programme' : 'Étape suivante';
+        };
+
+        debugNextBtn.onclick = () => {
+            if (index < preview.trace.length - 1) {
+                index += 1;
+                render();
+            } else {
+                index = preview.trace.length - 1;
+                render();
+            }
+        };
+
+        debugPrevBtn.onclick = () => {
+            if (index > 0) {
+                index -= 1;
+                render();
+            }
+        };
+
+        debugModal.hidden = false;
+        render();
+    }
+
+    if (debugBtn) {
+        debugBtn.addEventListener('click', openDebugModal);
+    }
+
+    document.querySelectorAll('[data-debug-close]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            debugModal.hidden = true;
+        });
+    });
 
     function toggleToolboxMenu() {
         if (!toolbox) return;
@@ -689,6 +947,59 @@ function wireUI() {
         Robot.reset();
         Robot.draw();
     });
+
+    const challengeInput = document.getElementById('challengeTimeInput');
+    const applyChallengeBtn = document.getElementById('applyChallengeBtn');
+    const pokemonChallengeInput = document.getElementById('pokemonChallengeTimeInput');
+    const applyPokemonChallengeBtn = document.getElementById('applyPokemonChallengeBtn');
+    const classicModeBtn = document.getElementById('classicModeBtn');
+    const pokemonModeBtn = document.getElementById('pokemonModeBtn');
+    const pokemonGamePanel = document.getElementById('pokemonGamePanel');
+    const pokemonStartBtn = document.getElementById('pokemonStartBtn');
+    if (challengeInput && applyChallengeBtn) {
+        applyChallengeBtn.addEventListener('click', () => {
+            const value = Number(challengeInput.value);
+            Robot.challengeSeconds = Number.isFinite(value) ? Math.min(120, Math.max(5, Math.round(value))) : 20;
+            challengeInput.value = String(Robot.challengeSeconds);
+            Robot.updateHud();
+        });
+    }
+    if (pokemonChallengeInput && applyPokemonChallengeBtn) {
+        applyPokemonChallengeBtn.addEventListener('click', () => {
+            const value = Number(pokemonChallengeInput.value);
+            Robot.pokemonDurationMs = Number.isFinite(value) ? Math.min(180, Math.max(5, Math.round(value))) * 1000 : 30000;
+            pokemonChallengeInput.value = String(Math.round(Robot.pokemonDurationMs / 1000));
+            if (Robot.mode === 'pokemon') {
+                Robot.resetPokemonGame();
+                Robot.startPokemonGame();
+            }
+        });
+    }
+
+    function setRobotMode(mode) {
+        Robot.mode = mode;
+        const isPokemon = mode === 'pokemon';
+        if (classicModeBtn) classicModeBtn.classList.toggle('active', !isPokemon);
+        if (pokemonModeBtn) pokemonModeBtn.classList.toggle('active', isPokemon);
+        if (pokemonGamePanel) pokemonGamePanel.hidden = !isPokemon;
+        if (isPokemon) {
+            Robot.resetPokemonGame();
+        } else {
+            Robot.hidePokemonPopup();
+            Robot.reset();
+        }
+        Robot.draw();
+    }
+
+    if (classicModeBtn) classicModeBtn.addEventListener('click', () => setRobotMode('classic'));
+    if (pokemonModeBtn) pokemonModeBtn.addEventListener('click', () => setRobotMode('pokemon'));
+    if (pokemonStartBtn) {
+        pokemonStartBtn.addEventListener('click', () => {
+            Robot.mode = 'pokemon';
+            Robot.startPokemonGame();
+            Robot.draw();
+        });
+    }
 
     // Download menu (PDF / .py)
     const menuBtn = document.getElementById('menuBtn');
@@ -749,9 +1060,30 @@ const Robot = {
     dir: 0,            // 0=up, 1=right, 2=down, 3=left
     pen: '#FFD43B',
     trail: [],         // {x1,y1,x2,y2,color}
+    visited: [],       // {x,y,color}
+    obstacles: [],     // {x,y}
+    flag: { x: 16, y: 3 },
     canvas: null,
     ctx: null,
     timer: null,
+    elapsedMs: 0,
+    startedAt: null,
+    reachedFlag: false,
+    blocked: false,
+    losePopup: null,
+    winPopup: null,
+    challengeSeconds: 20,
+    recordBroken: false,
+    challengeCompleted: false,
+    zoom: 1,
+    mode: 'classic',
+    pokemonTimer: null,
+    pokemonStartedAt: null,
+    pokemonDurationMs: 30000,
+    pokemonBalls: [],
+    pokemonCollected: 0,
+    pokemonGoal: 6,
+    pokemonPopup: null,
 
     size() {
         const c = this.canvas;
@@ -764,29 +1096,300 @@ const Robot = {
     },
 
     reset() {
-        this.x = Math.floor(this.cols / 2);
-        this.y = Math.floor(this.rows / 2);
+        this.x = 2;
+        this.y = 2;
         this.dir = 0;
-        this.pen = '#6ee7ff';
+        this.renderX = 2;
+        this.renderY = 2;
+        this.renderDir = 0;
+        this.pen = '#60A5FA';
         this.trail = [];
+        this.visited = [{ x: this.x, y: this.y, color: 'rgba(59, 130, 246, 0.18)' }];
+        this.mode = 'classic';
+        this.obstacles = [
+            { x: 5, y: 2 }, { x: 6, y: 2 }, { x: 7, y: 2 }, { x: 8, y: 2 },
+            { x: 5, y: 4 }, { x: 5, y: 5 }, { x: 5, y: 6 },
+            { x: 9, y: 6 }, { x: 10, y: 6 }, { x: 11, y: 6 },
+            { x: 12, y: 9 }, { x: 12, y: 10 }, { x: 12, y: 11 },
+            { x: 8, y: 12 }, { x: 9, y: 12 }, { x: 10, y: 12 },
+            { x: 14, y: 6 }, { x: 14, y: 7 }, { x: 14, y: 8 }
+        ];
+        this.flag = { x: this.cols - 2, y: 2 };
+        this.elapsedMs = 0;
+        this.startedAt = null;
+        this.reachedFlag = false;
+        this.blocked = false;
+        this.recordBroken = false;
+        this.challengeCompleted = false;
+        this.zoom = 1;
+        this.hideLosePopup();
+        this.hideWinPopup();
+        this.updateHud();
     },
 
-    step(dx, dy, n) {
+    showLosePopup(message = 'Le chat a touché un obstacle.') {
+        if (!this.losePopup) {
+            const popup = document.createElement('div');
+            popup.className = 'robot-lose-popup';
+            popup.innerHTML = `
+                <div class="robot-lose-card">
+                    <h3>Vous avez perdu</h3>
+                    <p id="robotLoseMessage">Le chat a touché un obstacle.</p>
+                    <button type="button" id="robotTryAgainBtn">Réessayer</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            this.losePopup = popup;
+            const retryBtn = document.getElementById('robotTryAgainBtn');
+            retryBtn?.addEventListener('click', () => {
+                this.hideLosePopup();
+                initRobotCanvas();
+                this.reset();
+                this.draw();
+            });
+        }
+        const loseMessage = this.losePopup.querySelector('#robotLoseMessage');
+        if (loseMessage) loseMessage.textContent = message;
+        this.losePopup.hidden = false;
+    },
+
+    hideLosePopup() {
+        if (this.losePopup) this.losePopup.hidden = true;
+    },
+
+    showWinPopup(message = null) {
+        if (!this.winPopup) {
+            const popup = document.createElement('div');
+            popup.className = 'robot-win-popup';
+            popup.innerHTML = `
+                <div class="robot-win-card">
+                    <h3>Bravo !</h3>
+                    <p id="robotWinMessage">Tu as réussi !</p>
+                    <button type="button" id="robotWinBtn">OK</button>
+                </div>
+            `;
+            document.body.appendChild(popup);
+            this.winPopup = popup;
+            const winBtn = document.getElementById('robotWinBtn');
+            winBtn?.addEventListener('click', () => {
+                this.hideWinPopup();
+            });
+        }
+        const winMessage = this.winPopup.querySelector('#robotWinMessage');
+        if (winMessage) {
+            if (message) {
+                winMessage.textContent = message;
+            } else {
+                const seconds = (this.elapsedMs / 1000).toFixed(1);
+                const parts = [`Tu as réussi en ${seconds} s !`];
+                if (this.recordBroken) parts.push('Nouveau top score !');
+                if (this.challengeCompleted) parts.push(`Défi réussi : objectif ${this.challengeSeconds} s atteint !`);
+                else parts.push(`Objectif : ${this.challengeSeconds} s.`);
+                winMessage.textContent = parts.join(' ');
+            }
+        }
+        this.winPopup.hidden = false;
+    },
+
+    hideWinPopup() {
+        if (this.winPopup) this.winPopup.hidden = true;
+    },
+
+    hidePokemonPopup() {
+        if (this.pokemonPopup) this.pokemonPopup.hidden = true;
+    },
+
+    updateHud() {
+        const statusEl = document.getElementById('robotStatus');
+        const timeEl = document.getElementById('robotTime');
+        const bestEl = document.getElementById('robotBest');
+        const goalEl = document.getElementById('robotGoal');
+        if (!statusEl || !timeEl || !bestEl || !goalEl) return;
+
+        const elapsed = this.startedAt ? (this.elapsedMs || (Date.now() - this.startedAt)) / 1000 : 0;
+        const elapsedText = elapsed > 0 ? `${elapsed.toFixed(1)} s` : '0.0 s';
+        const best = Number(localStorage.getItem('amir-best-time') || 0);
+        const bestText = best > 0 ? `${best.toFixed(1)} s` : '—';
+
+        statusEl.textContent = this.reachedFlag ? 'Mission réussie !' : this.blocked ? 'Obstacle bloqué !' : 'Parcours en cours';
+        timeEl.textContent = `Temps: ${elapsedText}`;
+        bestEl.textContent = `Top score: ${bestText}`;
+        goalEl.textContent = `Objectif: ${this.challengeSeconds} s pour aller au drapeau`;
+    },
+
+    playMoveSound(kind) {
+        const AudioCtor = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtor) return;
+        const ctx = this.audioCtx || new AudioCtor();
+        this.audioCtx = ctx;
+        const freq = { forward: 220, backward: 180, left: 260, right: 320, jump: 440 }[kind] || 220;
+        const t0 = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.08, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 0.18);
+    },
+
+    animateTo(x, y, dir) {
+        this.renderX = this.renderX ?? this.x;
+        this.renderY = this.renderY ?? this.y;
+        this.renderDir = this.renderDir ?? this.dir;
+        const fromX = this.renderX;
+        const fromY = this.renderY;
+        const fromDir = this.renderDir;
+        const start = performance.now();
+        const duration = 420;
+        const animate = (now) => {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = 1 - Math.pow(1 - p, 2.6);
+            this.renderX = fromX + (x - fromX) * eased;
+            this.renderY = fromY + (y - fromY) * eased;
+            this.renderDir = fromDir + ((dir ?? this.dir) - fromDir) * eased;
+            this.draw();
+            if (p < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                this.renderX = x;
+                this.renderY = y;
+                this.renderDir = dir ?? this.dir;
+            }
+        };
+        requestAnimationFrame(animate);
+    },
+
+    step(dx, dy, n, { ignoreObstacles = false } = {}) {
         for (let i = 0; i < n; i++) {
             const nx = this.x + dx;
             const ny = this.y + dy;
-            if (nx < 0 || ny < 0 || nx >= this.cols || ny >= this.rows) break;
+            const hitEdge = nx < 0 || ny < 0 || nx >= this.cols || ny >= this.rows;
+            const hitObstacle = this.obstacles.some((cell) => cell.x === nx && cell.y === ny);
+            if (hitEdge || (hitObstacle && !ignoreObstacles)) {
+                this.blocked = true;
+                this.showLosePopup(hitEdge ? 'Vous avez perdu : le chat a dépassé les bordures.' : 'Vous avez perdu');
+                if (hitObstacle) {
+                    this.obstacles = this.obstacles.map((cell) => {
+                        if (cell.x === nx && cell.y === ny) {
+                            return { ...cell, touched: true };
+                        }
+                        return cell;
+                    });
+                }
+                break;
+            }
             this.trail.push({ x1: this.x, y1: this.y, x2: nx, y2: ny, color: this.pen });
+            this.visited.push({ x: nx, y: ny, color: this.pen });
             this.x = nx;
             this.y = ny;
+            if (this.mode === 'pokemon') {
+                const caughtBall = (this.pokemonBalls || []).find((ball) => !ball.collected && ball.x === this.x && ball.y === this.y);
+                if (caughtBall) {
+                    caughtBall.collected = true;
+                    this.pokemonCollected += 1;
+                    this.updatePokemonCollection();
+                }
+            }
+            this.animateTo(nx, ny, this.dir);
+            if (this.x === this.flag.x && this.y === this.flag.y) {
+                this.reachedFlag = true;
+                const current = this.elapsedMs / 1000;
+                const best = Number(localStorage.getItem('amir-best-time') || 0);
+                this.recordBroken = !best || current < best;
+                if (this.recordBroken) {
+                    localStorage.setItem('amir-best-time', String(current));
+                }
+                this.challengeCompleted = current <= this.challengeSeconds;
+                this.showWinPopup();
+                break;
+            }
         }
     },
 
-    forward(n) { this.step(0, -1, n); },
-    backward(n) { this.step(0, 1, n); },
-    left() { this.dir = (this.dir + 3) % 4; },
-    right() { this.dir = (this.dir + 1) % 4; },
+    directionVector() {
+        const vectors = [
+            { dx: 0, dy: -1 },
+            { dx: 1, dy: 0 },
+            { dx: 0, dy: 1 },
+            { dx: -1, dy: 0 }
+        ];
+        return vectors[this.dir % 4];
+    },
+
+    moveRelative(sign, n, { ignoreObstacles = false } = {}) {
+        const { dx, dy } = this.directionVector();
+        this.step(dx * sign, dy * sign, n, { ignoreObstacles });
+    },
+
+    forward(n) { this.moveRelative(1, n); },
+    backward(n) { this.moveRelative(-1, n); },
+    jump(n) { this.moveRelative(1, n, { ignoreObstacles: true }); },
+    zoomIn() { this.zoom = Math.min(1.8, Number((this.zoom || 1).toFixed(2)) + 0.15); },
+    zoomOut() { this.zoom = Math.max(0.7, Number((this.zoom || 1).toFixed(2)) - 0.15); },
+    left() { this.dir = (this.dir + 3) % 4; this.renderDir = this.dir; },
+    right() { this.dir = (this.dir + 1) % 4; this.renderDir = this.dir; },
     setColor(c) { this.pen = c; },
+
+    resetPokemonGame() {
+        if (this.pokemonTimer) clearInterval(this.pokemonTimer);
+        this.pokemonStartedAt = null;
+        this.pokemonCollected = 0;
+        this.pokemonGoal = 6;
+        this.pokemonBalls = [];
+        const positions = [
+            { x: 3, y: 3 }, { x: 7, y: 5 }, { x: 10, y: 8 }, { x: 13, y: 5 }, { x: 15, y: 10 }, { x: 9, y: 14 },
+            { x: 4, y: 12 }, { x: 17, y: 3 }, { x: 12, y: 17 }, { x: 18, y: 13 }
+        ];
+        for (const pos of positions) {
+            if (!this.obstacles.some((obs) => obs.x === pos.x && obs.y === pos.y) && !(this.x === pos.x && this.y === pos.y)) {
+                this.pokemonBalls.push({ ...pos, collected: false });
+            }
+            if (this.pokemonBalls.length >= this.pokemonGoal) break;
+        }
+        const scoreEl = document.getElementById('pokemonScore');
+        const timerEl = document.getElementById('pokemonTimer');
+        if (scoreEl) scoreEl.textContent = `Pokéballs: 0 / ${this.pokemonBalls.length}`;
+        if (timerEl) timerEl.textContent = `Temps: ${(this.pokemonDurationMs / 1000).toFixed(0)} s`;
+    },
+
+    startPokemonGame() {
+        this.mode = 'pokemon';
+        this.resetPokemonGame();
+        this.pokemonStartedAt = Date.now();
+        this.pokemonTimer = setInterval(() => {
+            const elapsed = Date.now() - this.pokemonStartedAt;
+            const remainingMs = Math.max(0, this.pokemonDurationMs - elapsed);
+            const timerEl = document.getElementById('pokemonTimer');
+            if (timerEl) timerEl.textContent = `Temps: ${(remainingMs / 1000).toFixed(1)} s`;
+            if (remainingMs <= 0) {
+                clearInterval(this.pokemonTimer);
+                this.pokemonTimer = null;
+                if (this.pokemonCollected < this.pokemonBalls.length) {
+                    this.showLosePopup('Temps écoulé ! Tu n\'as pas ramassé toutes les Pokéballs.');
+                }
+                return;
+            }
+            this.updatePokemonCollection();
+        }, 100);
+    },
+
+    updatePokemonCollection() {
+        const scoreEl = document.getElementById('pokemonScore');
+        const balls = this.pokemonBalls || [];
+        const collectedCount = balls.filter((ball) => ball.collected).length;
+        if (scoreEl) scoreEl.textContent = `Pokéballs: ${collectedCount} / ${balls.length}`;
+        if (collectedCount >= balls.length) {
+            this.hideLosePopup();
+            this.showWinPopup('Tu as ramassé toutes les Pokéballs avant le temps !');
+            if (this.pokemonTimer) clearInterval(this.pokemonTimer);
+            this.pokemonTimer = null;
+        }
+    },
 
     draw() {
         const ctx = this.ctx;
@@ -794,52 +1397,216 @@ const Robot = {
         const cell = this.cell;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // grid
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-        ctx.lineWidth = 1;
+        // clean grid canvas for step visibility
+        ctx.fillStyle = '#F8FAFC';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
         for (let i = 0; i <= this.cols; i++) {
-            ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, this.rows * cell); ctx.stroke();
+            const x = i * cell;
+            ctx.strokeStyle = i % 5 === 0 ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.22)';
+            ctx.lineWidth = i % 5 === 0 ? 1.2 : 1;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, this.rows * cell);
+            ctx.stroke();
         }
         for (let j = 0; j <= this.rows; j++) {
-            ctx.beginPath(); ctx.moveTo(0, j * cell); ctx.lineTo(this.cols * cell, j * cell); ctx.stroke();
+            const y = j * cell;
+            ctx.strokeStyle = j % 5 === 0 ? 'rgba(59, 130, 246, 0.18)' : 'rgba(148, 163, 184, 0.22)';
+            ctx.lineWidth = j % 5 === 0 ? 1.2 : 1;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.cols * cell, y);
+            ctx.stroke();
         }
 
+        // draw obstacle blocks
+        for (const obstacle of this.obstacles) {
+            const x = obstacle.x * cell;
+            const y = obstacle.y * cell;
+            ctx.fillStyle = obstacle.touched ? '#111827' : '#F87171';
+            ctx.fillRect(x + 4, y + 4, cell - 8, cell - 8);
+            ctx.strokeStyle = obstacle.touched ? '#000000' : '#B91C1C';
+            ctx.lineWidth = obstacle.touched ? 3 : 1.5;
+            ctx.strokeRect(x + 4, y + 4, cell - 8, cell - 8);
+        }
+
+        // draw flag goal
+        const flagX = this.flag.x * cell + cell / 2;
+        const flagY = this.flag.y * cell + cell / 2;
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(flagX - cell * 0.16, flagY - cell * 0.7, 4, cell * 0.9);
+        ctx.fillStyle = '#22C55E';
+        ctx.beginPath();
+        ctx.moveTo(flagX - cell * 0.15, flagY - cell * 0.42);
+        ctx.lineTo(flagX + cell * 0.48, flagY - cell * 0.2);
+        ctx.lineTo(flagX - cell * 0.15, flagY + cell * 0.05);
+        ctx.closePath();
+        ctx.fill();
+
+        // visited squares = steps already taken
+        for (const stepCell of this.visited) {
+            const x = stepCell.x * cell;
+            const y = stepCell.y * cell;
+            ctx.fillStyle = stepCell.color || 'rgba(96, 165, 250, 0.22)';
+            ctx.fillRect(x + 4, y + 4, cell - 8, cell - 8);
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.45)';
+            ctx.strokeRect(x + 4, y + 4, cell - 8, cell - 8);
+        }
+
+        if (this.mode === 'pokemon') {
+            for (const ball of this.pokemonBalls || []) {
+                if (ball.collected) continue;
+                const bx = ball.x * cell + cell / 2;
+                const by = ball.y * cell + cell / 2;
+                const radius = cell * 0.18;
+                ctx.fillStyle = '#F59E0B';
+                ctx.beginPath();
+                ctx.arc(bx, by, radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(bx, by, radius * 0.6, 0, Math.PI * 2);
+                ctx.fillStyle = '#FDE68A';
+                ctx.fill();
+                ctx.fillStyle = '#DC2626';
+                ctx.fillRect(bx - radius * 0.8, by - radius * 0.15, radius * 1.6, radius * 0.3);
+                ctx.strokeStyle = '#7C2D12';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(bx - radius * 0.8, by - radius * 0.15, radius * 1.6, radius * 0.3);
+            }
+        }
+
+        // current cell glow
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+        ctx.fillRect(this.x * cell + 3, this.y * cell + 3, cell - 6, cell - 6);
+
         // trail
-        ctx.lineWidth = Math.max(3, cell * 0.28);
+        ctx.lineWidth = Math.max(3, cell * 0.24);
         ctx.lineCap = 'round';
         for (const s of this.trail) {
-            ctx.strokeStyle = s.color;
+            ctx.strokeStyle = s.color || '#60A5FA';
             ctx.beginPath();
             ctx.moveTo(s.x1 * cell + cell / 2, s.y1 * cell + cell / 2);
             ctx.lineTo(s.x2 * cell + cell / 2, s.y2 * cell + cell / 2);
             ctx.stroke();
         }
 
-        // robot
-        const cx = this.x * cell + cell / 2;
-        const cy = this.y * cell + cell / 2;
-        const r = cell * 0.34;
+        // modern 3D cat
+        const cx = this.renderX * cell + cell / 2;
+        const cy = this.renderY * cell + cell / 2;
+        const size = cell * 0.72 * (this.zoom || 1);
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(this.dir * Math.PI / 2);
-        ctx.fillStyle = '#0e1530';
-        ctx.strokeStyle = '#a78bfa';
-        ctx.lineWidth = 2;
-        roundRect(ctx, -r, -r, r * 2, r * 2, 6);
-        ctx.fill();
-        ctx.stroke();
-        // eyes
-        ctx.fillStyle = '#FFD43B';
-        ctx.beginPath(); ctx.arc(-r * 0.4, -r * 0.25, r * 0.16, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(r * 0.4, -r * 0.25, r * 0.16, 0, Math.PI * 2); ctx.fill();
-        // direction triangle (pointing up)
-        ctx.fillStyle = '#3776AB';
+        ctx.rotate(this.renderDir * Math.PI / 2);
+        ctx.scale(this.zoom || 1, this.zoom || 1);
+
+        // shadow
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
         ctx.beginPath();
-        ctx.moveTo(0, -r * 1.05);
-        ctx.lineTo(-r * 0.35, -r * 0.55);
-        ctx.lineTo(r * 0.35, -r * 0.55);
+        ctx.ellipse(0, size * 0.7, size * 0.56, size * 0.26, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // body
+        const furGradient = ctx.createLinearGradient(-size * 0.7, -size * 0.7, size * 0.7, size * 0.7);
+        furGradient.addColorStop(0, '#F9A8D4');
+        furGradient.addColorStop(0.5, '#FB7185');
+        furGradient.addColorStop(1, '#F472B6');
+        ctx.fillStyle = furGradient;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, size * 0.58, size * 0.42, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // head
+        ctx.fillStyle = '#FBCFE8';
+        ctx.beginPath();
+        ctx.ellipse(0, -size * 0.45, size * 0.42, size * 0.32, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // ears
+        ctx.fillStyle = '#F9A8D4';
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.20, -size * 0.75);
+        ctx.lineTo(-size * 0.06, -size * 1.05);
+        ctx.lineTo(size * 0.04, -size * 0.75);
         ctx.closePath();
         ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(size * 0.20, -size * 0.75);
+        ctx.lineTo(size * 0.06, -size * 1.05);
+        ctx.lineTo(-size * 0.04, -size * 0.75);
+        ctx.closePath();
+        ctx.fill();
+
+        // inner ears
+        ctx.fillStyle = '#FDE68A';
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.15, -size * 0.77);
+        ctx.lineTo(-size * 0.08, -size * 0.96);
+        ctx.lineTo(-size * 0.01, -size * 0.77);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(size * 0.15, -size * 0.77);
+        ctx.lineTo(size * 0.08, -size * 0.96);
+        ctx.lineTo(size * 0.01, -size * 0.77);
+        ctx.closePath();
+        ctx.fill();
+
+        // face
+        ctx.fillStyle = '#1F2937';
+        ctx.beginPath();
+        ctx.arc(-size * 0.12, -size * 0.44, size * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(size * 0.12, -size * 0.44, size * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = '#1F2937';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -size * 0.28, size * 0.12, 0.2, Math.PI - 0.2);
+        ctx.stroke();
+
+        // nose
+        ctx.fillStyle = '#FB7185';
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 0.32);
+        ctx.lineTo(size * 0.08, -size * 0.23);
+        ctx.lineTo(-size * 0.08, -size * 0.23);
+        ctx.closePath();
+        ctx.fill();
+
+        // paws
+        ctx.fillStyle = '#F9A8D4';
+        ctx.beginPath();
+        ctx.ellipse(-size * 0.22, size * 0.42, size * 0.12, size * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(size * 0.22, size * 0.42, size * 0.12, size * 0.18, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // tail
+        ctx.strokeStyle = '#F472B6';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(size * 0.58, 0);
+        ctx.quadraticCurveTo(size * 0.9, -size * 0.2, size * 0.9, size * 0.2);
+        ctx.stroke();
+
+        // little 3D whiskers
+        ctx.strokeStyle = '#F9A8D4';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-size * 0.24, -size * 0.32);
+        ctx.lineTo(-size * 0.55, -size * 0.38);
+        ctx.moveTo(-size * 0.24, -size * 0.24);
+        ctx.lineTo(-size * 0.55, -size * 0.18);
+        ctx.moveTo(size * 0.24, -size * 0.32);
+        ctx.lineTo(size * 0.55, -size * 0.38);
+        ctx.moveTo(size * 0.24, -size * 0.24);
+        ctx.lineTo(size * 0.55, -size * 0.18);
+        ctx.stroke();
+
         ctx.restore();
     }
 };
@@ -898,8 +1665,16 @@ function expand(block, out, env) {
     const t = block.type;
     if (t === 'robot_forward') { out.push({ op: 'forward', n: Math.max(1, Math.round(evalNum(block.getInputTargetBlock('STEPS'), 1))) }); }
     else if (t === 'robot_backward') { out.push({ op: 'backward', n: Math.max(1, Math.round(evalNum(block.getInputTargetBlock('STEPS'), 1))) }); }
+    else if (t === 'robot_jump') { out.push({ op: 'jump', n: Math.max(1, Math.round(evalNum(block.getInputTargetBlock('STEPS'), 1))) }); }
     else if (t === 'robot_turn_left') { out.push({ op: 'left' }); }
     else if (t === 'robot_turn_right') { out.push({ op: 'right' }); }
+    else if (t === 'robot_zoom_in') { out.push({ op: 'zoomIn' }); }
+    else if (t === 'robot_zoom_out') { out.push({ op: 'zoomOut' }); }
+    else if (t === 'robot_sound_forward') { out.push({ op: 'sound', kind: 'forward' }); }
+    else if (t === 'robot_sound_backward') { out.push({ op: 'sound', kind: 'backward' }); }
+    else if (t === 'robot_sound_turn_left') { out.push({ op: 'sound', kind: 'left' }); }
+    else if (t === 'robot_sound_turn_right') { out.push({ op: 'sound', kind: 'right' }); }
+    else if (t === 'robot_sound_jump') { out.push({ op: 'sound', kind: 'jump' }); }
     else if (t === 'robot_pen') { out.push({ op: 'pen', color: block.getFieldValue('COLOR') }); }
     else if (t === 'robot_repeat_square') {
         const s = Math.max(1, Math.round(evalNum(block.getInputTargetBlock('SIDE'), 1)));
@@ -940,8 +1715,12 @@ function walkChain(block, out, env) {
 function applyAction(a) {
     if (a.op === 'forward') Robot.forward(a.n);
     else if (a.op === 'backward') Robot.backward(a.n);
+    else if (a.op === 'jump') Robot.jump(a.n);
     else if (a.op === 'left') Robot.left();
     else if (a.op === 'right') Robot.right();
+    else if (a.op === 'zoomIn') Robot.zoomIn();
+    else if (a.op === 'zoomOut') Robot.zoomOut();
+    else if (a.op === 'sound') Robot.playMoveSound(a.kind);
     else if (a.op === 'pen') Robot.setColor(a.color);
 }
 
@@ -951,14 +1730,53 @@ function runRobot() {
     initRobotCanvas();
     Robot.reset();
     Robot.draw();
+
     const actions = [];
     workspace.getTopBlocks(true).forEach((top) => walkChain(top, actions, {}));
+
+    Robot.startedAt = Date.now();
+    Robot.elapsedMs = 0;
+    Robot.reachedFlag = false;
+    Robot.blocked = false;
+    Robot.updateHud();
+
     let i = 0;
     if (Robot.timer) clearInterval(Robot.timer);
     Robot.timer = setInterval(() => {
-        if (i >= actions.length) { clearInterval(Robot.timer); Robot.draw(); return; }
+        const now = Date.now();
+        Robot.elapsedMs = now - Robot.startedAt;
+        Robot.updateHud();
+
+        if (i >= actions.length) {
+            clearInterval(Robot.timer);
+            Robot.draw();
+            if (!Robot.reachedFlag && !Robot.blocked) {
+                Robot.updateHud();
+            }
+            return;
+        }
+
         applyAction(actions[i++]);
         Robot.draw();
+
+        if (Robot.reachedFlag) {
+            clearInterval(Robot.timer);
+            const best = Number(localStorage.getItem('amir-best-time') || 0);
+            const current = Robot.elapsedMs / 1000;
+            Robot.recordBroken = !best || current < best;
+            if (Robot.recordBroken) {
+                localStorage.setItem('amir-best-time', String(current));
+            }
+            Robot.challengeCompleted = current <= Robot.challengeSeconds;
+            Robot.showWinPopup();
+            Robot.updateHud();
+            return;
+        }
+
+        if (Robot.blocked) {
+            clearInterval(Robot.timer);
+            Robot.updateHud();
+        }
     }, 320);
 }
 
