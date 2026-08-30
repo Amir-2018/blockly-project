@@ -6,7 +6,7 @@
       "prenom": "Claire",
       "username": "claire.martin",
       "key": "KEY-D0C6842D",
-      "loginSuccessCount": 0
+      "loginSuccessCount": 2
     },
     {
       "id": "tmterc5oy",
@@ -36,7 +36,7 @@
           "prenom": "Léa",
           "username": "lea.martin",
           "key": "KEY-6A-6ALEA002",
-          "loginSuccessCount": 1
+          "loginSuccessCount": 2
         }
       ],
       "blocks": {
