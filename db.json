@@ -5,14 +5,16 @@
       "nom": "Martin",
       "prenom": "Claire",
       "username": "claire.martin",
-      "key": "KEY-D0C6842D"
+      "key": "KEY-D0C6842D",
+      "loginSuccessCount": 0
     },
     {
       "id": "tmterc5oy",
       "nom": "dsd",
       "prenom": "sdsd",
       "username": "sdsd",
-      "key": "KEY-EEDF7757"
+      "key": "KEY-EEDF7757",
+      "loginSuccessCount": 0
     }
   ],
   "classes": [
@@ -25,14 +27,16 @@
           "nom": "Dupont",
           "prenom": "Jean",
           "username": "jean.dupont",
-          "key": "KEY-6A-6AJEAN01"
+          "key": "KEY-6A-6AJEAN01",
+          "loginSuccessCount": 0
         },
         {
           "id": "e2",
           "nom": "Martin",
           "prenom": "Léa",
           "username": "lea.martin",
-          "key": "KEY-6A-6ALEA002"
+          "key": "KEY-6A-6ALEA002",
+          "loginSuccessCount": 1
         }
       ],
       "blocks": {
@@ -69,14 +73,16 @@
           "nom": "Bernard",
           "prenom": "Hugo",
           "username": "hugo.bernard.eleve",
-          "key": "KEY-5B-5BHUGO01"
+          "key": "KEY-5B-5BHUGO01",
+          "loginSuccessCount": 0
         },
         {
           "id": "smtesznm8",
           "nom": "aa",
           "prenom": "aa",
           "username": "aa.aa",
-          "key": "KEY-5B-FF176EF9"
+          "key": "KEY-5B-FF176EF9",
+          "loginSuccessCount": 0
         }
       ],
       "blocks": {}
